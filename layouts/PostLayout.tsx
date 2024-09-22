@@ -103,7 +103,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                   در توییتر بحث کنید
                 </Link>
                 {` • `}
-                <Link href={editUrl(filePath)}>View on GitHub</Link>
+                <Link href={editUrl(filePath)}>نمایش در گیت هاب</Link>
               </div>
               {siteMetadata.comments && (
                 <div
