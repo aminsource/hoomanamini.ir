@@ -8,6 +8,7 @@ import PageTitle from '@/components/PageTitle'
 import SectionContainer from '@/components/SectionContainer'
 import siteMetadata from '@/data/siteMetadata'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
+import { persianDate } from 'utils/format'
 
 interface LayoutProps {
   content: CoreContent<Blog>
@@ -30,7 +31,11 @@ export default function PostLayout({ content, next, prev, children }: LayoutProp
                 <div>
                   <dt className="sr-only">Published on</dt>
                   <dd className="text-base font-medium leading-6 text-gray-500 dark:text-gray-400">
-                    <time dateTime={date}>{formatDate(date, siteMetadata.locale)}</time>
+                    <time dateTime={date}>
+                      {persianDate(new Date(formatDate(date, siteMetadata.locale)), {
+                        format: 'dddd, D MMMM , YYYY',
+                      })}
+                    </time>
                   </dd>
                 </div>
               </dl>

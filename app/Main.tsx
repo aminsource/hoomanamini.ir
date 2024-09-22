@@ -32,7 +32,7 @@ export default function Home({ posts }) {
                       <dd className="text-base font-medium leading-6 text-gray-500 dark:text-gray-400">
                         <time dateTime={date}>
                           {persianDate(new Date(formatDate(date, siteMetadata.locale)), {
-                            format: 'YYYY/MM/D',
+                            format: 'dddd, D MMMM , YYYY',
                           })}
                         </time>
                       </dd>

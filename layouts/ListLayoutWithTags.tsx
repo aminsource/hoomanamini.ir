@@ -10,6 +10,7 @@ import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import tagData from 'app/tag-data.json'
+import { persianDate } from 'utils/format'
 
 interface PaginationProps {
   totalPages: number
@@ -130,7 +131,9 @@ export default function ListLayoutWithTags({
                         <dt className="sr-only">منتشر شده در</dt>
                         <dd className="text-base font-medium leading-6 text-gray-500 dark:text-gray-400">
                           <time dateTime={date} suppressHydrationWarning>
-                            {formatDate(date, siteMetadata.locale)}
+                            {persianDate(new Date(formatDate(date, siteMetadata.locale)), {
+                              format: 'dddd, D MMMM , YYYY',
+                            })}
                           </time>
                         </dd>
                       </dl>
