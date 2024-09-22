@@ -64,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang={siteMetadata.language}
+      dir={siteMetadata.direction}
       className={`${space_grotesk.variable} scroll-smooth`}
       suppressHydrationWarning
     >
