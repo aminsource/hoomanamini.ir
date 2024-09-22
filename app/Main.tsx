@@ -3,6 +3,7 @@ import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import { formatDate } from 'pliny/utils/formatDate'
 import NewsletterForm from 'pliny/ui/NewsletterForm'
+import { persianDate } from 'utils/format'
 
 const MAX_DISPLAY = 5
 
@@ -29,7 +30,11 @@ export default function Home({ posts }) {
                     <dl>
                       <dt className="sr-only">Published on</dt>
                       <dd className="text-base font-medium leading-6 text-gray-500 dark:text-gray-400">
-                        <time dateTime={date}>{formatDate(date, siteMetadata.locale)}</time>
+                        <time dateTime={date}>
+                          {persianDate(new Date(formatDate(date, siteMetadata.locale)), {
+                            format: 'YYYY/MM/D',
+                          })}
+                        </time>
                       </dd>
                     </dl>
                     <div className="space-y-5 xl:col-span-3">
@@ -57,9 +62,9 @@ export default function Home({ posts }) {
                         <Link
                           href={`/blog/${slug}`}
                           className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
-                          aria-label={`Read more: "${title}"`}
+                          aria-label={`بیشتر : "${title}"`}
                         >
-                          Read more &larr;
+                          بیشتر &larr;
                         </Link>
                       </div>
                     </div>
