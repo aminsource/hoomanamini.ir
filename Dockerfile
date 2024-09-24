@@ -22,6 +22,7 @@ EXPOSE 3000
 # Start the Next.js application
 CMD ["npm", "start"]
 
+# Move it to github action
 # docker build -t hoomanamini:latest .
 # docker stop hoomanamini || true
 # docker rm hoomanamini || true
