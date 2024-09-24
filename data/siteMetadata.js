@@ -21,7 +21,7 @@ const siteMetadata = {
   linkedin: 'https://www.linkedin.com/in/hooman-amini-6b01099/',
   threads: 'https://www.threads.net',
   instagram: 'https://www.instagram.com/hoomanamini160/',
-  locale: 'fa',
+  locale: 'en',
   // set to true if you want a navbar fixed to the top
   stickyNav: false,
   analytics: {

@@ -22,5 +22,7 @@ EXPOSE 3000
 # Start the Next.js application
 CMD ["npm", "start"]
 
-# docker build -t hoomanamini .
+# docker build -t hoomanamini:latest .
+# docker stop hoomanamini || true
+# docker rm hoomanamini || true
 # docker run -d -p 4000:3000 hoomanamini
