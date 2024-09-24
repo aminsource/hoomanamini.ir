@@ -19,12 +19,12 @@ jobs:
 
       # Stop the existing Docker container
       - name: Stop existing container
-        run: docker stop hoomanamini || true
+        run: docker stop hoom-front || true
 
       # Remove the existing Docker container
       - name: Remove existing container
-        run: docker rm hoomanamini || true
+        run: docker rm hoom-front || true
 
       # Run the new Docker container
       - name: Run new Docker container
-        run: docker run -d -p 4000:3000 hoomanamini
+        run: docker run -d -p 4000:3000 --name hoom-front hoomanamini
