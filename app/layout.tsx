@@ -95,12 +95,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fff" />
       <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000" />
       <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
-      <script
-        defer
-        src="http://37.32.9.1:5000/script.js"
-        data-website-id="10b4d1e0-f0a5-42f5-9398-1a82bf2c8bae"
-      ></script>
       <body className="bg-white pl-[calc(100vw-100%)] text-black antialiased dark:bg-gray-950 dark:text-white">
+        <script
+          defer
+          src="http://37.32.9.1:5000/script.js"
+          data-website-id="10b4d1e0-f0a5-42f5-9398-1a82bf2c8bae"
+        ></script>
+
         <ThemeProviders>
           <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
           <SectionContainer>
