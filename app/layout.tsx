@@ -101,7 +101,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <Script
         src="http://37.32.9.1:5000/script.js"
         data-website-id="10b4d1e0-f0a5-42f5-9398-1a82bf2c8bae"
-        strategy="defer"
       />
 
       <body className="bg-white pl-[calc(100vw-100%)] text-black antialiased dark:bg-gray-950 dark:text-white">
