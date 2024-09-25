@@ -1,0 +1,30 @@
+name: Build and Deploy with Docker
+
+on:
+  push:
+    branches:
+      - develop # Trigger this workflow when pushing to the 'develop' branch
+
+jobs:
+  deploy:
+    runs-on: self-hosted # or 'ubuntu-latest' if using GitHub-hosted runners with Docker pre-installed
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Build the Docker image
+      - name: Build Docker image
+        run: docker build -t hoomanamini:latest .
+
+      # Stop the existing Docker container
+      - name: Stop existing container
+        run: docker stop hoom-front || true
+
+      # Remove the existing Docker container
+      - name: Remove existing container
+        run: docker rm hoom-front || true
+
+      # Run the new Docker container
+      - name: Run new Docker container
+        run: docker run -d -p 4000:3000 --name hoom-front hoomanamini

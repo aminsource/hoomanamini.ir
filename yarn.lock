@@ -4958,6 +4958,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dayjs@npm:^1.11.11":
+  version: 1.11.13
+  resolution: "dayjs@npm:1.11.13"
+  checksum: f388db88a6aa93956c1f6121644e783391c7b738b73dbc54485578736565c8931bdfba4bb94e9b1535c6e509c97d5deb918bbe1ae6b34358d994de735055cca9
+  languageName: node
+  linkType: hard
+
 "debounce@npm:^1.2.1":
   version: 1.2.1
   resolution: "debounce@npm:1.2.1"
@@ -7534,6 +7541,13 @@ __metadata:
     "@pkgjs/parseargs":
       optional: true
   checksum: be31027fc72e7cc726206b9f560395604b82e0fddb46c4cbf9f97d049bcef607491a5afc0699612eaa4213ca5be8fd3e1e7cd187b3040988b65c9489838a7c00
+  languageName: node
+  linkType: hard
+
+"jalaliday@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "jalaliday@npm:2.3.0"
+  checksum: d7fa6ef4c0a8aebbfff889d9405474f98554211b5bb8f88e9d102faa41e0e9a7c756dce87043a9bc092db187ad13d5bcc78d12d42c50a3c833d94598d3c6cd58
   languageName: node
   linkType: hard
 
@@ -11392,6 +11406,7 @@ __metadata:
     body-scroll-lock: ^4.0.0-beta.0
     contentlayer2: 0.5.1
     cross-env: ^7.0.3
+    dayjs: ^1.11.11
     esbuild: 0.20.2
     eslint: ^8.45.0
     eslint-config-next: 14.2.3
@@ -11402,6 +11417,7 @@ __metadata:
     hast-util-from-html-isomorphic: ^2.0.0
     husky: ^9.0.0
     image-size: 1.0.0
+    jalaliday: ^2.3.0
     lint-staged: ^13.0.0
     next: 14.2.3
     next-contentlayer2: 0.5.1

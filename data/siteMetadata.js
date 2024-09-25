@@ -1,26 +1,27 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: 'Next.js Starter Blog',
-  author: 'Tails Azimuth',
-  headerTitle: 'TailwindBlog',
-  description: 'A blog created with Next.js and Tailwind.css',
-  language: 'en-us',
-  theme: 'system', // system, dark or light
-  siteUrl: 'https://tailwind-nextjs-starter-blog.vercel.app',
-  siteRepo: 'https://github.com/timlrx/tailwind-nextjs-starter-blog',
+  title: 'هومن امینی',
+  author: '',
+  headerTitle: '',
+  description: 'آخرین مقالات ',
+  language: 'fa',
+  direction: 'rtl',
+  theme: 'dark', // system, dark or light
+  siteUrl: 'https://hoomanamini.ir',
+  siteRepo: 'https://github.com/aminsource/hoomanamini.ir',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/logo.png`,
   socialBanner: `${process.env.BASE_PATH || ''}/static/images/twitter-card.png`,
   mastodon: 'https://mastodon.social/@mastodonuser',
-  email: 'address@yoursite.com',
-  github: 'https://github.com',
-  x: 'https://twitter.com/x',
+  email: 'amini.hooman@gmail.com',
+  github: 'https://github.com/aminsource',
+  x: 'https://x.com/HoomanAmini',
   // twitter: 'https://twitter.com/Twitter',
   facebook: 'https://facebook.com',
-  youtube: 'https://youtube.com',
-  linkedin: 'https://www.linkedin.com',
+  // youtube: 'https://youtube.com',
+  linkedin: 'https://www.linkedin.com/in/hooman-amini-6b01099/',
   threads: 'https://www.threads.net',
-  instagram: 'https://www.instagram.com',
-  locale: 'en-US',
+  instagram: 'https://www.instagram.com/hoomanamini160/',
+  locale: 'en',
   // set to true if you want a navbar fixed to the top
   stickyNav: false,
   analytics: {
@@ -48,9 +49,9 @@ const siteMetadata = {
     // },
   },
   newsletter: {
-    // supports mailchimp, buttondown, convertkit, klaviyo, revue, emailoctopus, beehive
+    // supports mailchimp, buttondown, convertkit, klaviyo, revue, emailoctopus
     // Please add your .env file and modify it according to your selection
-    provider: 'buttondown',
+    // provider: 'buttondown',
   },
   comments: {
     // If you want to use an analytics provider you have to add it to the

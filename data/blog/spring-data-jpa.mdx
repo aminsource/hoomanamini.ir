@@ -1,0 +1,253 @@
+---
+title: 'آشنایی با Spring Data JPA'
+date: '2024-09-25'
+lastmod: '2024-09-25'
+tags: ['اسپرینگ', 'اسپرینگ دیتا', 'جاوا']
+draft: false
+summary: 'این مقاله به معرفی Spring Data JPA و نحوه استفاده از آن با یک مثال عملی می‌پردازد.'
+images: ['/static/images/twitter-card.png']
+---
+
+# آشنایی با Spring Data JPA
+
+#### مقدمه
+
+**Spring Data JPA** یکی از زیرمجموعه‌های مهم از اکوسیستم **Spring Data** است که به توسعه‌دهندگان اجازه می‌دهد با پایگاه‌های داده رابطه‌ای با کمترین پیچیدگی و کد ممکن تعامل کنند. Spring Data JPA عملیات اصلی CRUD (Create, Read, Update, Delete) را به‌طور خودکار فراهم می‌کند و به ما اجازه می‌دهد به‌سادگی با دیتابیس‌های مختلف کار کنیم. همچنین قابلیت‌های پیشرفته‌تری مانند کوئری‌های سفارشی، صفحه‌بندی، مرتب‌سازی و غیره را نیز ارائه می‌دهد.
+
+این مقاله به معرفی Spring Data JPA و نحوه استفاده از آن با یک مثال عملی می‌پردازد.
+
+---
+
+### شروع کار با Spring Data JPA
+
+#### 1. تنظیم پروژه با Spring Boot و JPA
+
+ابتدا یک پروژه Spring Boot ایجاد می‌کنیم. می‌توانیم از **Spring Initializr** برای تنظیم پروژه استفاده کنیم. وابستگی‌های مورد نیاز برای Spring Data JPA را به **pom.xml** اضافه می‌کنیم:
+
+<div dir="ltr">
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+</div>
+
+**H2** یک دیتابیس در حافظه است که برای نمونه‌سازی سریع استفاده می‌شود. شما می‌توانید به‌جای آن از دیتابیس‌های دیگری مثل MySQL یا PostgreSQL نیز استفاده کنید.
+
+#### 2. ایجاد Entity برای محصول
+
+برای شروع، یک **Entity** که نمایانگر محصول است، تعریف می‌کنیم. این Entity به عنوان یک جدول در دیتابیس ما ایجاد می‌شود:
+
+<div dir="ltr">
+
+```java
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+@Entity
+public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private Double price;
+
+    // Constructor, Getters, and Setters
+
+    public Product() {}
+
+    public Product(String name, Double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+}
+```
+
+</div>
+
+در اینجا، از **@Entity** استفاده شده تا کلاس `Product` به عنوان یک جدول در دیتابیس ایجاد شود. همچنین از **@Id** و **@GeneratedValue** برای مشخص کردن کلید اصلی و مقداردهی خودکار آن استفاده می‌شود.
+
+#### 3. ایجاد Repository
+
+یکی از مزایای Spring Data JPA این است که با استفاده از **Repository Interface** به‌سادگی می‌توان عملیات دیتابیس را مدیریت کرد. Spring Data به‌طور خودکار پیاده‌سازی این عملیات را فراهم می‌کند.
+
+<div dir="ltr">
+
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ProductRepository extends JpaRepository<Product, Long> {
+    // عملیات CRUD به‌طور خودکار فراهم می‌شود
+}
+```
+
+</div>
+
+**JpaRepository** متدهای پیش‌فرضی برای انجام عملیات CRUD مانند `findAll()`, `findById()`, `save()` و `deleteById()` ارائه می‌دهد.
+
+#### 4. ایجاد Service برای مدیریت محصولات
+
+اکنون یک **Service** ایجاد می‌کنیم تا عملیات مربوط به محصولات را از طریق Repository مدیریت کند.
+
+<div dir="ltr">
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class ProductService {
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
+    public Product saveProduct(Product product) {
+        return productRepository.save(product);
+    }
+
+    public void deleteProduct(Long id) {
+        productRepository.deleteById(id);
+    }
+
+    public Product getProductById(Long id) {
+        return productRepository.findById(id).orElse(null);
+    }
+}
+```
+
+</div>
+
+این کلاس به ما اجازه می‌دهد تا از طریق متدهای موجود در **ProductRepository** با دیتابیس تعامل کنیم.
+
+#### 5. ایجاد Controller برای APIهای محصولات
+
+برای فراهم کردن APIهای لازم برای تعامل با محصولات، یک **REST Controller** ایجاد می‌کنیم:
+
+<div dir="ltr">
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/products")
+public class ProductController {
+
+    @Autowired
+    private ProductService productService;
+
+    @GetMapping
+    public List<Product> getAllProducts() {
+        return productService.getAllProducts();
+    }
+
+    @PostMapping
+    public Product createProduct(@RequestBody Product product) {
+        return productService.saveProduct(product);
+    }
+
+    @GetMapping("/{id}")
+    public Product getProductById(@PathVariable Long id) {
+        return productService.getProductById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+    }
+}
+```
+
+</div>
+
+---
+
+این API شامل متدهایی برای عملیات CRUD روی محصولات است:
+
+- **GET /products**: لیستی از تمام محصولات را برمی‌گرداند.
+- **POST /products**: یک محصول جدید ایجاد می‌کند.
+- **GET /products/id**: اطلاعات یک محصول را بر اساس ID برمی‌گرداند.
+- **DELETE /products/id**: یک محصول را بر اساس ID حذف می‌کند.
+
+---
+
+### عملیات پیشرفته با Spring Data JPA
+
+#### 1. کوئری‌های سفارشی
+
+Spring Data JPA به شما اجازه می‌دهد که با استفاده از **Query Methods** کوئری‌های سفارشی را تعریف کنید. برای مثال، فرض کنید بخواهیم بر اساس نام محصول جستجو کنیم:
+
+<div dir="ltr">
+
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface ProductRepository extends JpaRepository<Product, Long> {
+    List<Product> findByName(String name);
+}
+```
+
+</div>
+
+Spring Data JPA به‌طور خودکار کوئری‌ای برای این متد تولید می‌کند که بر اساس فیلد `name` در دیتابیس جستجو می‌کند.
+
+#### 2. صفحه‌بندی و مرتب‌سازی
+
+Spring Data JPA قابلیت صفحه‌بندی و مرتب‌سازی داده‌ها را نیز فراهم می‌کند. برای مثال، برای صفحه‌بندی محصولات می‌توانیم از این متد استفاده کنیم:
+
+<div dir="ltr">
+
+```java
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
+public Page<Product> getProducts(int page, int size) {
+    return productRepository.findAll(PageRequest.of(page, size));
+}
+```
+
+</div>
+
+این متد لیستی از محصولات را بر اساس صفحه و اندازه مشخص‌شده برمی‌گرداند.
+
+---
+
+### نتیجه‌گیری
+
+**Spring Data JPA** به توسعه‌دهندگان اجازه می‌دهد که به‌راحتی عملیات دیتابیس را بدون نیاز به نوشتن کدهای پیچیده مدیریت کنند. با استفاده از قابلیت‌های پیشرفته‌ای مانند کوئری‌های سفارشی، صفحه‌بندی و مرتب‌سازی، و پشتیبانی از انواع پایگاه‌های داده، Spring Data JPA یکی از ابزارهای اصلی در توسعه برنامه‌های مدرن مبتنی بر پایگاه داده است.
+
+اگر در پروژه‌های خود نیاز به تعامل با دیتابیس دارید، Spring Data JPA یک راه‌حل قوی و کارآمد برای مدیریت داده‌ها به شما ارائه می‌دهد.
