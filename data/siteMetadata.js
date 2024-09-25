@@ -1,6 +1,6 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: 'وبلاگ ',
+  title: 'هومن امینی',
   author: '',
   headerTitle: '',
   description: 'آخرین مقالات ',
