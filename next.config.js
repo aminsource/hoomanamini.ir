@@ -7,7 +7,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 // Updated Content Security Policy
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' giscus.app https://hoomanamini.ir/umami-script/;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' giscus.app https://hoomanamini.ir/umami-script/*;
   style-src 'self' 'unsafe-inline';
   img-src * blob: data:;
   media-src *.s3.amazonaws.com;
@@ -20,7 +20,8 @@ const securityHeaders = [
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
   {
     key: 'Content-Security-Policy',
-    value: ContentSecurityPolicy.replace(/\n/g, ''),
+    // value: ContentSecurityPolicy.replace(/\n/g, ''),
+    value: '', // Temporarily disable CSP for debugging
   },
   // Other headers...
 ]
