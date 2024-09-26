@@ -4,7 +4,6 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
 
-// Updated Content Security Policy
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' giscus.app https://hoomanamini.ir/umami-script/*;
@@ -59,7 +58,7 @@ module.exports = () => {
       return [
         {
           source: '/tracker/:path*',
-          destination: 'http://localhost:5000/:path*', // Proxy to the tracker app
+          destination: 'http://37.32.9.1:5000/:path*', // Proxy to the tracker app running on the server IP
         },
       ]
     },
