@@ -58,7 +58,7 @@ module.exports = () => {
       return [
         {
           source: '/tracker/:path*',
-          destination: 'http://37.32.9.1:5000/:path*', // Proxy to the tracker app running on the server IP
+          destination: 'http://37.32.9.1:5000/dashboard/:path*', // Proxy to /dashboard in the tracker app
         },
       ]
     },
