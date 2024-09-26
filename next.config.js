@@ -17,11 +17,9 @@ const ContentSecurityPolicy = `
 `
 
 const securityHeaders = [
-  // https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
   {
     key: 'Content-Security-Policy',
-    // value: ContentSecurityPolicy.replace(/\n/g, ''),
-    value: '', // Temporarily disable CSP for debugging
+    value: ContentSecurityPolicy.replace(/\n/g, ''),
   },
   // Other headers...
 ]
@@ -30,9 +28,6 @@ const output = process.env.EXPORT ? 'export' : undefined
 const basePath = process.env.BASE_PATH || undefined
 const unoptimized = process.env.UNOPTIMIZED ? true : undefined
 
-/**
- * @type {import('next/dist/next-server/server/config').NextConfig}
- **/
 module.exports = () => {
   const plugins = [withContentlayer, withBundleAnalyzer]
   return plugins.reduce((acc, next) => next(acc), {
@@ -57,6 +52,14 @@ module.exports = () => {
         {
           source: '/(.*)',
           headers: securityHeaders,
+        },
+      ]
+    },
+    async rewrites() {
+      return [
+        {
+          source: '/tracker/:path*',
+          destination: 'http://localhost:5000/:path*', // Proxy to the tracker app
         },
       ]
     },
