@@ -99,7 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
       {/* Add your Umami script here */}
       <Script
-        src="http://37.32.9.1:5000/script.js"
+        src="https://tracker.hoomanamini.ir/script.js"
         data-website-id="10b4d1e0-f0a5-42f5-9398-1a82bf2c8bae"
       />
 
