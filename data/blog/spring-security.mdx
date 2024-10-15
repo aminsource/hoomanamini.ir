@@ -1,0 +1,218 @@
+---
+title: 'آشنایی با Spring Security و امنیت APIهای REST با JWT'
+date: '2024-09-25'
+lastmod: '2024-09-25'
+tags: ['اسپرینگ', 'امنیت', 'spring', 'security']
+draft: false
+summary: 'در این مقاله، ابتدا به معرفی کلی Spring Security و سپس به چگونگی محافظت از APIهای REST با استفاده از JWT می‌پردازیم. JWT به ما این امکان را می‌دهد که توکن‌هایی امن و سبک برای احراز هویت کاربران استفاده کنیم و دسترسی آن‌ها به منابع مختلف را مدیریت نماییم.'
+images: ['/static/images/twitter-card.png']
+---
+
+### مقاله: آشنایی با Spring Security و امنیت APIهای REST با JWT
+
+#### مقدمه
+
+در دنیای امروز که **APIهای REST** برای ارائه خدمات و داده‌ها به برنامه‌های تحت وب و موبایل به‌طور گسترده استفاده می‌شوند، **امنیت API** از اهمیت بالایی برخوردار است. حفاظت از داده‌ها و احراز هویت کاربران در هنگام دسترسی به این APIها، یکی از ضروریات توسعه نرم‌افزارهای مدرن است. **Spring Security** یکی از قوی‌ترین و پرکاربردترین فریم‌ورک‌های امنیتی در دنیای جاوا است که برای حفاظت از برنامه‌ها و APIها استفاده می‌شود.
+
+در این مقاله، ابتدا به معرفی کلی Spring Security و سپس به چگونگی محافظت از APIهای REST با استفاده از **JWT (JSON Web Token)** می‌پردازیم. JWT به ما این امکان را می‌دهد که توکن‌هایی امن و سبک برای احراز هویت کاربران استفاده کنیم و دسترسی آن‌ها به منابع مختلف را مدیریت نماییم.
+
+---
+
+### آشنایی با Spring Security
+
+**Spring Security** یک فریم‌ورک امنیتی قدرتمند برای برنامه‌های جاوا است که ویژگی‌های زیر را فراهم می‌کند:
+
+- **احراز هویت (Authentication)**: تضمین می‌کند که کاربران با هویت واقعی خود وارد سیستم شده‌اند.
+- **صدور مجوز (Authorization)**: کنترل می‌کند که کاربران چه دسترسی‌هایی به منابع دارند.
+- **امنیت APIهای REST**: با استفاده از JWT یا OAuth2 برای امنیت APIها.
+- **پشتیبانی از استانداردهای امنیتی**: شامل ورود به سیستم با فرم‌های سفارشی، احراز هویت مبتنی بر توکن و احراز هویت چندمرحله‌ای.
+
+Spring Security به شما امکان می‌دهد که به‌راحتی لایه‌های امنیتی مختلفی را برای برنامه خود پیاده‌سازی کنید و به‌سادگی APIهای REST خود را در مقابل دسترسی‌های غیرمجاز محافظت کنید.
+
+### چرا JWT برای امنیت API؟
+
+**JWT (JSON Web Token)** یک استاندارد امن و سبک برای انتقال اطلاعات بین دو طرف (مانند سرور و کاربر) است که در آن اطلاعات در قالب یک توکن رمزنگاری شده قرار می‌گیرند. این روش برای امنیت APIهای REST بسیار مناسب است زیرا:
+
+- **استقلال از Session**: نیازی به ذخیره‌سازی وضعیت کاربران در سمت سرور نیست.
+- **امنیت بالا**: JWT به‌طور امن رمزنگاری شده و فقط با کلید مخفی سرور قابل اعتبارسنجی است.
+- **سبک و سریع**: این توکن‌ها سبک و کم‌حجم هستند، که باعث می‌شود برای برنامه‌های موبایل و APIهای REST مناسب باشند.
+
+---
+
+### پیاده‌سازی امنیت API با Spring Security و JWT
+
+#### 1. تنظیم پروژه با Spring Boot
+
+ابتدا با استفاده از **Spring Initializr** یک پروژه Spring Boot ایجاد کرده و وابستگی‌های مورد نیاز را در فایل **pom.xml** اضافه می‌کنیم:
+
+<div dir="ltr">
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt</artifactId>
+    <version>0.9.1</version>
+</dependency>
+```
+
+</div>
+
+این وابستگی‌ها شامل Spring Security، Spring Web برای ساخت APIها و JJWT برای مدیریت JWT هستند.
+
+#### 2. ایجاد فیلتر JWT
+
+برای احراز هویت کاربران با JWT، باید یک فیلتر برای پردازش و اعتبارسنجی توکن‌های JWT ایجاد کنیم. این فیلتر بررسی می‌کند که آیا توکن معتبر است یا خیر و در صورت صحت، کاربر را احراز هویت می‌کند:
+
+<div dir="ltr">
+
+```java
+import io.jsonwebtoken.Jwts;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public class JwtTokenFilter extends OncePerRequestFilter {
+
+    private final String secretKey = "secret";
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException {
+        String token = request.getHeader("Authorization");
+
+        if (token != null && token.startsWith("Bearer ")) {
+            String jwt = token.substring(7);
+            String username = Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(jwt)
+                .getBody()
+                .getSubject();
+
+            if (username != null) {
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(username, null, null);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+        }
+
+        filterChain.doFilter(request, response);
+    }
+}
+```
+
+</div>
+
+در این فیلتر، توکن JWT از درخواست دریافت می‌شود، و اگر توکن معتبر باشد، کاربر احراز هویت شده و درخواست پردازش می‌شود.
+
+#### 3. پیکربندی Spring Security برای APIها
+
+در این مرحله، یک کلاس پیکربندی برای Spring Security ایجاد می‌کنیم تا از فیلتر JWT استفاده کنیم و دسترسی به APIها را کنترل کنیم:
+
+<div dir="ltr">
+
+```java
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .authorizeRequests()
+                .antMatchers("/login").permitAll()
+                .anyRequest().authenticated()
+                .and()
+            .addFilter(new JwtTokenFilter());
+
+        return http.build();
+    }
+}
+```
+
+</div>
+
+در این پیکربندی:
+
+- دسترسی به مسیر **/login** آزاد است تا کاربران بتوانند لاگین کنند.
+- سایر درخواست‌ها نیاز به احراز هویت دارند.
+- **JwtTokenFilter** برای اعتبارسنجی توکن‌ها اضافه شده است.
+
+#### 4. ایجاد کنترلر برای تولید JWT در هنگام لاگین
+
+برای تولید توکن JWT پس از ورود کاربر، یک کنترلر برای مدیریت درخواست لاگین ایجاد می‌کنیم:
+
+<div dir="ltr">
+
+```java
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+public class AuthController {
+
+    private final String secretKey = "secret";
+
+    @PostMapping("/login")
+    public Map<String, String> login(@RequestBody AuthRequest authRequest) {
+        // فرض کنید کاربر اعتبارسنجی موفقیت‌آمیز داشته باشد
+        String token = Jwts.builder()
+                .setSubject(authRequest.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // یک ساعت اعتبار
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put("token", token);
+        return tokenMap;
+    }
+}
+```
+
+</div>
+
+در اینجا، توکن JWT بر اساس نام کاربری و تاریخ انقضا تولید می‌شود و در پاسخ به درخواست لاگین به کاربر ارسال می‌شود.
+
+#### 5. ارسال توکن JWT در درخواست‌ها
+
+پس از تولید توکن JWT، این توکن باید در هر درخواست به APIهای محافظت شده ارسال شود. برای این کار، توکن JWT باید در **Header** درخواست HTTP قرار گیرد:
+
+<div dir="ltr">
+
+```
+Authorization: Bearer <JWT-Token>
+```
+
+</div>
+
+### نتیجه‌گیری
+
+**Spring Security** با پشتیبانی از JWT به ما اجازه می‌دهد که به‌سادگی APIهای REST خود را با استفاده از توکن‌های امن محافظت کنیم. JWT یک روش سریع و ایمن برای احراز هویت کاربران است و مناسب برای برنامه‌های مدرن که نیاز به احراز هویت بدون وابستگی به Session دارند. با استفاده از Spring Security و JWT، توسعه‌دهندگان می‌توانند به‌راحتی یک لایه امنیتی قوی برای APIهای خود پیاده‌سازی کنند که هم ایمن است و هم کارا.

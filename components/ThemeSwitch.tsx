@@ -81,10 +81,10 @@ const ThemeSwitch = () => {
                           active ? 'bg-primary-600 text-white' : ''
                         } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                       >
-                        <div className="mr-2">
+                        <div className="ml-2">
                           <Sun />
                         </div>
-                        Light
+                        روشن
                       </button>
                     )}
                   </Menu.Item>
@@ -97,10 +97,10 @@ const ThemeSwitch = () => {
                           active ? 'bg-primary-600 text-white' : ''
                         } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                       >
-                        <div className="mr-2">
+                        <div className="ml-2">
                           <Moon />
                         </div>
-                        Dark
+                        تاریک
                       </button>
                     )}
                   </Menu.Item>
@@ -113,10 +113,10 @@ const ThemeSwitch = () => {
                           active ? 'bg-primary-600 text-white' : ''
                         } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                       >
-                        <div className="mr-2">
+                        <div className="ml-2">
                           <Monitor />
                         </div>
-                        System
+                        سیستم
                       </button>
                     )}
                   </Menu.Item>
