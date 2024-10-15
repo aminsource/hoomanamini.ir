@@ -1,0 +1,134 @@
+---
+title: 'Spring AI (قسمت سوم): نصب و راه‌اندازی '
+date: '2024-10-16 1:00'
+lastmod: '2024-10-14'
+tags:
+  [
+    'Spring AI',
+    'نصب و راه‌اندازی',
+    'هوش مصنوعی',
+    'جاوا',
+    'مدل‌های زبان بزرگ',
+    'BOM',
+    'مدیریت وابستگی‌ها',
+    'LLM Applications',
+    'Spring Boot',
+    'Gradle',
+    'Maven',
+  ]
+draft: true
+summary: 'در این قسمت از سری مقالات Spring AI، به نصب و راه‌اندازی این فریم‌ورک می‌پردازیم. این راهنما به شما کمک می‌کند تا پروژه Spring AI خود را به سادگی آغاز کنید و آماده استفاده از قابلیت‌های هوش مصنوعی در برنامه‌های جاوای خود شوید.'
+images: []
+---
+
+در این قسمت از سری مقالات Spring AI، به نصب و راه‌اندازی این فریم‌ورک می‌پردازیم. این راهنما به شما کمک می‌کند تا پروژه Spring AI خود را به سادگی آغاز کنید و آماده استفاده از قابلیت‌های هوش مصنوعی در برنامه‌های جاوای خود شوید.
+
+### افزودن وابستگی‌ها (dependencies)
+
+این بخش شامل نقاط شروع برای نحوه استفاده از Spring AI می‌باشد.
+
+شما باید مراحل هر یک از بخش‌های زیر را با توجه به نیازهای خود دنبال کنید.
+
+Spring AI از Spring Boot نسخه‌های زیر پشتیبانی می‌کند:
+
+<div dir="ltr">3.2.x</div>
+<div dir="ltr">3.3.x</div>
+
+**Spring Initializr**
+
+به سایت [start.spring.io](https://start.spring.io) مراجعه کنید و مدل‌های هوش مصنوعی و (Vector Stores) که می‌خواهید در برنامه‌های جدید خود استفاده کنید را انتخاب کنید.
+
+**افزودن مخازن Milestone و Snapshot**
+
+اگر ترجیح می‌دهید وابستگی‌ها را به صورت دستی اضافه کنید، دستورالعمل‌های زیر را دنبال کنید.
+
+برای استفاده از نسخه‌های Milestone و Snapshot، باید ارجاعاتی به مخازن Spring Milestone و/یا Snapshot در فایل بیلد خود اضافه کنید.
+
+برای Maven، مخازن زیر را بر حسب نیاز اضافه کنید:
+
+<div dir="ltr">
+
+```xml
+<repositories>
+    <repository>
+        <id>spring-milestones</id>
+        <name>Spring Milestones</name>
+        <url>https://repo.spring.io/milestone</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+    <repository>
+        <id>spring-snapshots</id>
+        <name>Spring Snapshots</name>
+        <url>https://repo.spring.io/snapshot</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+    </repository>
+</repositories>
+```
+
+</div>
+
+برای Gradle، مخازن زیر را بر حسب نیاز اضافه کنید:
+
+<div dir="ltr">
+
+```gradle
+repositories {
+  mavenCentral()
+  maven { url 'https://repo.spring.io/milestone' }
+  maven { url 'https://repo.spring.io/snapshot' }
+}
+```
+
+</div>
+
+**مدیریت وابستگی‌ها**
+
+Spring AI Bill of Materials (BOM) نسخه‌های توصیه شده تمامی وابستگی‌های مورد استفاده توسط یک نسخه از Spring AI را اعلام می‌کند. با استفاده از BOM در اسکریپت بیلد برنامه خود، نیازی به مشخص و مدیریت نسخه‌های وابستگی‌ها نخواهید داشت. به جای آن، نسخه BOM مورد استفاده شما تعیین‌کننده نسخه‌های وابستگی‌ها است. این کار تضمین می‌کند که به طور پیش‌فرض از نسخه‌های پشتیبانی شده و تست‌شده استفاده می‌کنید، مگر اینکه تصمیم به تغییر آن‌ها بگیرید.
+
+اگر از Maven استفاده می‌کنید، می‌توانید BOM را با افزودن بخش زیر به فایل `pom.xml` خود اضافه کنید:
+
+<div dir="ltr">
+
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-bom</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+</div>
+
+کاربران Gradle نیز می‌توانند از BOM استفاده کنند و با استفاده از پشتیبانی بومی Gradle (5.0+) برای اعلام محدودیت‌های وابستگی با استفاده از BOM Maven، وابستگی‌ها را مدیریت کنند. این کار با افزودن متد `platform` به بخش وابستگی‌های اسکریپت بیلد Gradle انجام می‌شود:
+
+<div dir="ltr">
+
+```gradle
+dependencies {
+  implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
+  // وابستگی‌های استارتری ماژول‌های خاص که می‌خواهید استفاده کنید را جایگزین کنید
+  implementation 'org.springframework.ai:spring-ai-openai'
+}
+```
+
+</div>
+
+برای مشاهده یک مثال عملی، می‌توانید به مخزن زیر مراجعه کنید:
+
+**LLM Applications with Java and Spring AI**
+
+این مخزن نمونه‌هایی از نحوه ساخت چت بات با استفاده از Spring AI و مدل‌های زبان بزرگ (LLMs) را نشان می‌دهد که به کمک هوش مصنوعی مولد قدرت می‌گیرند.
+
+[https://github.com/aminsource/gap](https://github.com/aminsource/gap)
+
+در قسمت‌های بعدی به جزئیات این چت‌بات به تفصیل می‌پردازیم.
