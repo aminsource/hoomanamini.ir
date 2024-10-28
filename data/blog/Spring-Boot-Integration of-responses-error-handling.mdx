@@ -1,0 +1,161 @@
+---
+title: 'یکپارچه‌سازی پاسخ‌ها و مدیریت خطاها در سرویس‌های Spring Boot'
+date: '2024-10-28'
+lastmod: '2024-10-28'
+tags:
+  [
+    'Spring Boot',
+    'پاسخ API',
+    'مدیریت خطا',
+    'مدیریت استثنا',
+    'Global Exception Handler',
+    'کلاس Wrapper',
+    'جاوا',
+    'ControllerAdvice',
+    'REST API',
+    'توسعه وب',
+    'استثناهای سفارشی',
+    'پاسخ یکپارچه',
+  ]
+draft: false
+summary: 'در این مقاله، ما درباره نحوه یکپارچه‌سازی پاسخ‌ها و مدیریت خطاها در سرویس‌های Spring Boot صحبت می‌کنیم. هدف این است که بتوانیم به‌طور یکنواخت برای همه درخواست‌ها، چه موفق و چه ناموفق، پاسخ‌هایی یک‌دست و با قالبی مشخص بازگردانیم.'
+images: []
+---
+
+<div dir="rtl">
+
+### یکپارچه‌سازی پاسخ‌ها و مدیریت خطاها در سرویس‌های Spring Boot
+
+برای توسعه‌دهندگان سرویس‌های وب، یکپارچه‌سازی پاسخ‌ها و مدیریت خطاها یکی از چالش‌های مهم و تأثیرگذار در ایجاد تجربه‌ای مناسب برای کاربران و نگهداری راحت‌تر کد است. در این مقاله، ما درباره نحوه یکپارچه‌سازی پاسخ‌ها و مدیریت خطاها در سرویس‌های Spring Boot صحبت می‌کنیم. هدف این است که بتوانیم به‌طور یکنواخت برای همه درخواست‌ها، چه موفق و چه ناموفق، پاسخ‌هایی یک‌دست و با قالبی مشخص بازگردانیم.
+
+### گام اول: تعریف یک Wrapper برای پاسخ‌های عمومی
+
+برای یکپارچه‌سازی پاسخ‌ها، اولین گام ایجاد یک کلاس Wrapper برای ساختاردهی همه پاسخ‌های سرویس‌هاست. این کلاس پاسخ‌ها را به صورت استاندارد ارائه می‌کند.
+
+<div dir="ltr">
+
+```java
+public class ApiResponse<T> {
+    private boolean success;
+    private String message;
+    private T data;
+
+    public ApiResponse(boolean success, String message, T data) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+    }
+
+    public static <T> ApiResponse<T> success(T data, String message) {
+        return new ApiResponse<>(true, message, data);
+    }
+
+    public static <T> ApiResponse<T> failure(String message) {
+        return new ApiResponse<>(false, message, null);
+    }
+
+    // Getters and Setters
+}
+```
+
+</div>
+
+این کلاس “ApiResponse” برای تمامی پاسخ‌های موفق و ناموفق استفاده می‌شود. متدهای استاتیک “success” و “failure” امکان تولید پاسخ‌های مناسب را با توجه به وضعیت درخواست فراهم می‌کنند.
+
+### گام دوم: ایجاد یک Global Exception Handler
+
+برای مدیریت خطاها به‌صورت یکنواخت، می‌توانید یک Global Exception Handler با استفاده از “@ControllerAdvice” ایجاد کنید. این کلاس تمام خطاهایی که در هر جای برنامه رخ می‌دهند را گرفته و به فرمت مشخصی بازمی‌گرداند.
+
+<div dir="ltr">
+
+```java
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        ApiResponse<Object> response = ApiResponse.failure(ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Object>> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        ApiResponse<Object> response = ApiResponse.failure(ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Object>> handleGlobalException(Exception ex, WebRequest request) {
+        ApiResponse<Object> response = ApiResponse.failure("An unexpected error occurred");
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+```
+
+</div>
+
+این کلاس با استفاده از “@ExceptionHandler” انواع خطاها را گرفته و آن‌ها را به‌صورت یکنواخت به کاربر ارائه می‌کند. این ساختار به شما کمک می‌کند تا خطاهای مشابه را به‌طور مرکزی و بدون نیاز به تکرار کد در هر سرویس مدیریت کنید.
+
+### گام سوم: استفاده از Wrapper در سرویس‌ها
+
+در این مرحله باید در سرویس‌های خود از “ApiResponse” استفاده کنید تا پاسخ‌های موفق و خطاها به شکل یکسان ارائه شوند.
+
+<div dir="ltr">
+
+```java
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class UserController {
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<ApiResponse<User>> getUserById(@PathVariable Long id) {
+        User user = userService.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
+
+        ApiResponse<User> response = ApiResponse.success(user, "User found successfully");
+        return ResponseEntity.ok(response);
+    }
+}
+```
+
+</div>
+
+در اینجا، کنترلر “UserController” از “ApiResponse” برای بازگرداندن پاسخ‌های موفق استفاده می‌کند. همچنین در صورت عدم یافتن کاربر، یک “ResourceNotFoundException” پرتاب می‌شود که توسط “GlobalExceptionHandler” مدیریت خواهد شد.
+
+### گام چهارم: ایجاد کلاس‌های استثنا (اختیاری)
+
+برای مدیریت بهتر خطاها، می‌توانید کلاس‌های استثنا سفارشی ایجاد کنید تا به‌راحتی انواع خطاها را شناسایی و مدیریت کنید.
+
+<div dir="ltr">
+
+```java
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+}
+```
+
+</div>
+
+### نتیجه‌گیری
+
+برای یکپارچه‌سازی پاسخ‌ها و مدیریت خطاها در سرویس‌های Spring Boot می‌توان از مراحل زیر استفاده کرد:
+
+1. **کلاس Wrapper برای پاسخ‌ها**: از یک کلاس عمومی مانند “ApiResponse” استفاده کنید تا قالب پاسخ‌ها یکسان باشد.
+2. **Global Exception Handler**: یک “@ControllerAdvice” برای مدیریت خطاها ایجاد کنید تا خطاها به‌صورت یکنواخت مدیریت شوند.
+3. **کلاس‌های استثنا سفارشی**: از کلاس‌های استثنا سفارشی برای شناسایی و مدیریت بهتر خطاها استفاده کنید.
+
+این روش به شما کمک می‌کند که پاسخ‌های موفق و پیام‌های خطا را به شکل یکنواخت بازگردانید، که این امر باعث بهبود نگهداری کد و تجربه کاربری بهتر می‌شود.
+
+</div>
