@@ -70,7 +70,8 @@ body {
 }
 
 code {
-  font-family: dana;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  direction: ltr;
 }
 
 @font-face {

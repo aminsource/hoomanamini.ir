@@ -100,7 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       {/* Add your Umami script here */}
       <Script
         src="https://tracker.hoomanamini.ir/script.js"
-        data-website-id="10b4d1e0-f0a5-42f5-9398-1a82bf2c8bae"
+        data-website-id="69821c49-a8e8-4d82-8fa1-77302799c591"
       />
 
       <body className="bg-white pl-[calc(100vw-100%)] text-black antialiased dark:bg-gray-950 dark:text-white">
