@@ -1,0 +1,166 @@
+---
+title: 'آشنایی  با Lambda Expressions در جاوا'
+date: '2024-01-01 13:00'
+lastmod: '2024-01-01'
+tags: ['جاوا']
+draft: false
+summary: ''
+images: []
+---
+
+**Lambda Expressions** یکی از ویژگی‌های کلیدی معرفی شده در **Java 8** است که امکان استفاده از توابع بی‌نام (anonymous functions) را فراهم می‌کند. این ویژگی کدنویسی را مختصرتر کرده و از روش‌های برنامه‌نویسی تابعی پشتیبانی می‌کند. در این مقاله به صورت جامع با lambda expression، کاربردها و مزایای آن آشنا خواهیم شد.
+
+---
+
+### Lambda Expressions چیست؟
+
+Lambda expressions راهی مختصر برای تعریف و استفاده از یک متد بدون نیاز به ساخت کلاس یا استفاده از نام متد است. به عبارت دیگر، lambda expressions همان متدهایی هستند که نیازی به تعریف در یک کلاس مشخص ندارند. این قابلیت عمدتاً برای کار با **Functional Interfaces** طراحی شده است.
+
+---
+
+### ساختار Lambda Expressions
+
+ساختار کلی یک lambda expression به صورت زیر است:
+
+```java
+(parameters) -> expression
+
+// یا
+
+(parameters) -> { statements; }
+```
+
+**اجزای اصلی:**
+
+- **Parameters:** پارامترهایی که به متد پاس داده می‌شوند. در صورتی که پارامتری وجود نداشته باشد، می‌توان از پرانتز خالی `()` استفاده کرد.
+- **Arrow Token (`->`):** جداساز بین لیست پارامترها و بدنه lambda.
+- **Body:** کاری که lambda انجام می‌دهد؛ می‌تواند یک عبارت یا بلوک کدی باشد.
+
+---
+
+### مثال‌ها و کاربردها
+
+#### مثال 1: ساده‌ترین Lambda
+
+برای شروع، به نمونه‌ای ساده نگاه کنید:
+
+```java
+// استفاده از کلاس ناشناس
+Runnable r1 = new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("Hello from Runnable!");
+    }
+};
+
+// استفاده از Lambda Expression
+Runnable r2 = () -> System.out.println("Hello from Runnable!");
+```
+
+#### مثال 2: استفاده با پارامتر
+
+یک lambda می‌تواند پارامترهای ورودی دریافت کند:
+
+```java
+// تعریف یک Functional Interface
+interface MathOperation {
+    int operate(int a, int b);
+}
+
+// پیاده‌سازی با Lambda
+MathOperation addition = (a, b) -> a + b;
+
+System.out.println(addition.operate(5, 3)); // خروجی: 8
+```
+
+---
+
+### آشنایی با Functional Interface
+
+**Functional Interface** به این معناست که یک interface تنها یک متد انتزاعی دارد. از lambda فقط در چنین interfaceهایی می‌توان استفاده کرد. برخی از رایج‌ترین نمونه‌های موجود در جاوا عبارتند از:
+
+- `Runnable` (متد: `run`)
+- `Callable` (متد: `call`)
+- `Comparator` (متد: `compare`)
+
+#### تعریف یک Functional Interface سفارشی
+
+```java
+@FunctionalInterface
+interface Greeting {
+    void sayHello(String name);
+}
+
+// استفاده از Lambda
+Greeting greet = name -> System.out.println("Hello, " + name + "!");
+greet.sayHello("Alice"); // خروجی: Hello, Alice!
+```
+
+---
+
+### کاربردهای مهم Lambda Expressions
+
+#### 1. استفاده در مجموعه‌ها (Collections)
+
+یکی از رایج‌ترین کاربردهای lambda در عملیات روی مجموعه‌هاست. برای مثال، مرتب‌سازی:
+
+```java
+List<String> names = Arrays.asList("John", "Alice", "Bob");
+
+// مرتب‌سازی با Comparator
+Collections.sort(names, (a, b) -> a.compareTo(b));
+```
+
+#### 2. استفاده با Stream API
+
+Stream API که در Java 8 معرفی شد، به همراه lambda ترکیبی قدرتمند برای پردازش داده‌ها ایجاد می‌کند:
+
+```java
+List<String> names = Arrays.asList("John", "Alice", "Bob");
+
+names.stream()
+     .filter(name -> name.startsWith("A"))
+     .forEach(System.out::println); // خروجی: Alice
+```
+
+#### 3. جایگزینی کلاس‌های ناشناس
+
+قبل از جاوا 8، برای پیاده‌سازی کدهای مرتبط با اینترفیس‌های تک‌متدی نیاز به ساخت کلاس‌های ناشناس بود. اکنون می‌توان با lambda کد را بسیار مختصرتر کرد:
+
+```java
+// کلاس ناشناس
+Comparator<Integer> comparator = new Comparator<Integer>() {
+    @Override
+    public int compare(Integer a, Integer b) {
+        return a - b;
+    }
+};
+
+// استفاده از Lambda
+Comparator<Integer> comparator = (a, b) -> a - b;
+```
+
+---
+
+### مزایای Lambda Expressions
+
+1. **کاهش کد اضافه (Boilerplate):** کدنویسی را ساده‌تر و مختصرتر می‌کند.
+2. **قابلیت خوانایی بالا:** کدهای مرتبط با عملیات ساده، خواناتر می‌شوند.
+3. **پشتیبانی از برنامه‌نویسی تابعی:** جاوا را به سمت سبکی مدرن‌تر از کدنویسی سوق می‌دهد.
+4. **سازگاری با API‌های جاوا:** مانند Stream API.
+
+---
+
+### محدودیت‌ها
+
+1. **استفاده فقط در Functional Interface:** lambda فقط برای اینترفیس‌های با یک متد انتزاعی قابل استفاده است.
+2. **پیچیدگی در موارد خاص:** استفاده از lambda‌های پیچیده ممکن است خوانایی کد را کاهش دهد.
+3. **دیباگ سخت‌تر:** خطایابی کدهای lambda گاهی دشوارتر از کلاس‌های معمولی است.
+
+---
+
+### نتیجه‌گیری
+
+Lambda expressions تحولی بزرگ در جاوا ایجاد کرده و امکان استفاده از برنامه‌نویسی تابعی را در کنار برنامه‌نویسی شی‌گرا فراهم نموده است. با استفاده از lambda می‌توانید کدهای خواناتر، مختصرتر و کارآمدتری بنویسید، به‌ویژه در عملیات‌هایی مانند مرتب‌سازی، فیلتر کردن، و پردازش داده‌ها.
+
+اگر در پروژه‌های خود به دنبال کاهش پیچیدگی و افزایش خوانایی هستید، یادگیری و استفاده از lambda expressions یکی از بهترین ابزارهای شما خواهد بود.

@@ -1,0 +1,158 @@
+---
+title: 'تفاوت اعضای Static و Non-Static در جاوا'
+date: '2024-01-01 9:00'
+lastmod: '2024-01-01'
+tags: ['جاوا']
+draft: false
+summary: ''
+images: []
+---
+
+###
+
+در زبان جاوا، اعضای کلاس (متغیرها و متدها) به دو دسته **Static** و **Non-Static** تقسیم می‌شوند. این دسته‌بندی مشخص می‌کند که یک عضو چگونه به کلاس یا نمونه‌های آن مرتبط می‌شود. در این مقاله، به بررسی تفاوت‌ها، ویژگی‌ها و کاربردهای این دو نوع عضو می‌پردازیم.
+
+---
+
+### **اعضای Static**
+
+اعضای Static به خود کلاس وابسته هستند و میان تمام نمونه‌های آن کلاس مشترک می‌باشند.
+
+#### **ویژگی‌های اعضای Static**
+
+1. **وابستگی به کلاس**: اعضای Static به جای نمونه‌ها، مستقیماً به کلاس وابسته‌اند.
+2. **مشترک برای همه نمونه‌ها**: تنها یک نسخه از اعضای Static در حافظه وجود دارد که توسط تمام نمونه‌ها استفاده می‌شود.
+3. **دسترسی بدون نمونه‌سازی**: می‌توان بدون ایجاد یک شیء، از طریق نام کلاس به این اعضا دسترسی داشت.
+4. **چرخه حیات**: با بارگذاری کلاس ایجاد شده و تا پایان برنامه در حافظه باقی می‌مانند.
+
+#### **مثال از اعضای Static**
+
+```java
+class MathUtils {
+    static final double PI = 3.14159; // ثابت Static
+
+    // متد Static
+    static double calculateCircleArea(double radius) {
+        return PI * radius * radius;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // دسترسی به اعضای Static از طریق نام کلاس
+        System.out.println("Value of PI: " + MathUtils.PI);
+        System.out.println("Area of Circle: " + MathUtils.calculateCircleArea(5));
+    }
+}
+```
+
+در این مثال، متغیر `PI` و متد `calculateCircleArea` به صورت Static تعریف شده‌اند و نیازی به نمونه‌سازی برای دسترسی به آن‌ها نیست.
+
+---
+
+### **اعضای Non-Static**
+
+اعضای Non-Static به نمونه‌های کلاس وابسته هستند و هر نمونه از کلاس، نسخه مختص به خود از این اعضا را دارد.
+
+#### **ویژگی‌های اعضای Non-Static**
+
+1. **وابستگی به نمونه**: اعضای Non-Static به هر شیء از کلاس وابسته‌اند.
+2. **کپی جداگانه برای هر نمونه**: هر نمونه از کلاس، کپی جداگانه‌ای از اعضای Non-Static دارد.
+3. **دسترسی از طریق شیء**: فقط از طریق نمونه‌ای از کلاس می‌توان به این اعضا دسترسی پیدا کرد.
+4. **چرخه حیات**: با ایجاد نمونه از کلاس به وجود می‌آیند و با حذف شیء از حافظه حذف می‌شوند.
+
+#### **مثال از اعضای Non-Static**
+
+```java
+class Person {
+    String name; // متغیر Non-Static
+    int age;     // متغیر Non-Static
+
+    // متد Non-Static
+    void introduce() {
+        System.out.println("Hi, I'm " + name + " and I'm " + age + " years old.");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Person person1 = new Person();
+        person1.name = "Alice";
+        person1.age = 25;
+
+        Person person2 = new Person();
+        person2.name = "Bob";
+        person2.age = 30;
+
+        // دسترسی به اعضای Non-Static از طریق نمونه‌ها
+        person1.introduce();
+        person2.introduce();
+    }
+}
+```
+
+در این مثال، هر شیء از کلاس `Person` داده‌های مخصوص به خود را دارد.
+
+---
+
+### **تفاوت اعضای Static و Non-Static**
+
+| ویژگی         | Static                               | Non-Static                        |
+| ------------- | ------------------------------------ | --------------------------------- |
+| **ارتباط**    | با کلاس                              | با نمونه                          |
+| **دسترسی**    | از طریق نام کلاس یا نمونه            | فقط از طریق نمونه                 |
+| **حافظه**     | یک نسخه برای همه نمونه‌ها            | نسخه جداگانه برای هر نمونه        |
+| **چرخه حیات** | با بارگذاری کلاس                     | با ایجاد و حذف نمونه              |
+| **کاربرد**    | داده‌ها و متدهای مشترک مانند ثابت‌ها | داده‌ها و متدهای مختص به هر نمونه |
+
+---
+
+### **تعامل اعضای Static و Non-Static**
+
+1. **اعضای Static نمی‌توانند مستقیماً به اعضای Non-Static دسترسی داشته باشند.**  
+   زیرا اعضای Non-Static به نمونه‌های کلاس وابسته‌اند و Static به نمونه‌ها دسترسی ندارد.
+2. **اعضای Non-Static می‌توانند به اعضای Static دسترسی داشته باشند.**  
+   زیرا اعضای Static همیشه در حافظه در دسترس هستند.
+
+#### **مثال:**
+
+```java
+class Demo {
+    static int staticVar = 10;
+    int nonStaticVar = 20;
+
+    // متد Static
+    static void staticMethod() {
+        System.out.println("Static Variable: " + staticVar);
+        // System.out.println("Non-Static Variable: " + nonStaticVar); // خطا
+    }
+
+    // متد Non-Static
+    void nonStaticMethod() {
+        System.out.println("Static Variable: " + staticVar);
+        System.out.println("Non-Static Variable: " + nonStaticVar);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Demo.staticMethod(); // فراخوانی متد Static
+
+        Demo demo = new Demo(); // ایجاد نمونه
+        demo.nonStaticMethod(); // فراخوانی متد Non-Static
+    }
+}
+```
+
+---
+
+### **کاربردها**
+
+- از **اعضای Static** برای داده‌ها یا متدهای مشترک مانند ثابت‌ها و ابزارهای کمکی استفاده کنید.
+- از **اعضای Non-Static** برای داده‌ها یا متدهایی که به نمونه خاصی از کلاس مرتبط هستند استفاده کنید.
+
+---
+
+### **جمع‌بندی**
+
+مفهوم اعضای Static و Non-Static، یکی از اصول کلیدی شی‌گرایی در جاوا است. درک صحیح این دو مفهوم به شما کمک می‌کند تا کدی سازمان‌یافته‌تر، کارآمدتر و قابل فهم‌تر بنویسید. انتخاب صحیح بین Static و Non-Static می‌تواند به بهینه‌تر شدن برنامه شما کمک کند.

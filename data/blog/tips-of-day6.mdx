@@ -1,0 +1,222 @@
+---
+title: 'راهنمای نصب PostgreSQL از طریق Docker و نحوه ارتباط با آن'
+date: '2024-01-01 6:00'
+lastmod: '2024-01-01'
+tags: ['devops', 'PostgreSQL']
+draft: false
+summary: ''
+images: []
+---
+
+### راهنمای نصب PostgreSQL از طریق Docker و نحوه ارتباط با آن
+
+استفاده از Docker برای اجرای PostgreSQL راهی سریع و ساده برای مدیریت پایگاه داده بدون نصب مستقیم آن روی سیستم است. در این مقاله به نصب PostgreSQL از طریق Docker و نحوه برقراری ارتباط با آن می‌پردازیم.
+
+---
+
+## **بخش اول: نصب PostgreSQL با Docker**
+
+### ۱. نصب Docker
+
+اگر Docker را نصب ندارید، می‌توانید از دستورات زیر برای نصب آن استفاده کنید:
+
+#### نصب Docker روی اوبونتو
+
+```bash
+sudo apt update
+sudo apt install docker.io -y
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+#### بررسی نسخه Docker
+
+برای اطمینان از نصب صحیح:
+
+```bash
+docker --version
+```
+
+---
+
+### ۲. اجرای PostgreSQL با Docker
+
+#### دانلود ایمیج PostgreSQL
+
+PostgreSQL را از Docker Hub دانلود کنید:
+
+```bash
+docker pull postgres:latest
+```
+
+#### اجرای کانتینر PostgreSQL
+
+برای اجرای PostgreSQL در یک کانتینر Docker:
+
+```bash
+docker run --name postgres-container -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -e POSTGRES_DB=mydatabase -p 5432:5432 -d postgres
+```
+
+در این دستور:
+
+- `--name postgres-container`: نام کانتینر.
+- `POSTGRES_USER=myuser`: نام کاربر PostgreSQL.
+- `POSTGRES_PASSWORD=mypassword`: رمز عبور کاربر.
+- `POSTGRES_DB=mydatabase`: نام پایگاه داده پیش‌فرض.
+- `-p 5432:5432`: نگاشت پورت محلی 5432 به پورت داخلی 5432 کانتینر.
+- `-d`: اجرای کانتینر در حالت پس‌زمینه.
+
+---
+
+### ۳. بررسی وضعیت کانتینر
+
+برای مشاهده وضعیت کانتینر:
+
+```bash
+docker ps
+```
+
+خروجی شامل جزئیات کانتینر در حال اجرا است. اگر کانتینر PostgreSQL را نمی‌بینید، با دستور زیر لیست همه کانتینرها (حتی متوقف‌شده‌ها) را ببینید:
+
+```bash
+docker ps -a
+```
+
+---
+
+## **بخش دوم: ارتباط با PostgreSQL در Docker**
+
+### ۱. اتصال به PostgreSQL از داخل کانتینر
+
+برای ورود به کانتینر و استفاده از ابزار `psql`:
+
+```bash
+docker exec -it postgres-container psql -U myuser -d mydatabase
+```
+
+### ۲. اتصال از سیستم میزبان
+
+می‌توانید از ابزارهای مختلف مانند `psql`، برنامه‌های مدیریت پایگاه داده (مانند pgAdmin)، یا زبان‌های برنامه‌نویسی برای اتصال استفاده کنید.
+
+#### اتصال با `psql` از سیستم میزبان:
+
+```bash
+psql -h localhost -p 5432 -U myuser -d mydatabase
+```
+
+در اینجا:
+
+- `-h localhost`: آدرس میزبان.
+- `-p 5432`: شماره پورت.
+- `-U myuser`: نام کاربر.
+- `-d mydatabase`: نام پایگاه داده.
+
+---
+
+## **بخش سوم: دستورات مدیریتی با Docker**
+
+### ۱. مشاهده لاگ‌های کانتینر
+
+برای بررسی لاگ‌های PostgreSQL:
+
+```bash
+docker logs postgres-container
+```
+
+### ۲. توقف کانتینر
+
+برای متوقف کردن کانتینر:
+
+```bash
+docker stop postgres-container
+```
+
+### ۳. شروع دوباره کانتینر
+
+برای راه‌اندازی مجدد کانتینر:
+
+```bash
+docker start postgres-container
+```
+
+### ۴. حذف کانتینر
+
+برای حذف کانتینر PostgreSQL:
+
+```bash
+docker rm -f postgres-container
+```
+
+### ۵. حذف ایمیج PostgreSQL
+
+اگر دیگر نیازی به ایمیج ندارید:
+
+```bash
+docker rmi postgres:latest
+```
+
+---
+
+## **بخش چهارم: استفاده از Docker Compose**
+
+### ایجاد فایل `docker-compose.yml`
+
+یک فایل با نام `docker-compose.yml` ایجاد کنید و محتوای زیر را در آن قرار دهید:
+
+```yaml
+version: '3.8'
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres-container
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+volumes:
+  postgres-data:
+```
+
+### اجرای Docker Compose
+
+برای راه‌اندازی سرویس PostgreSQL:
+
+```bash
+docker-compose up -d
+```
+
+برای متوقف کردن سرویس:
+
+```bash
+docker-compose down
+```
+
+---
+
+## **بخش پنجم: بک‌آپ و بازیابی پایگاه داده در Docker**
+
+### بک‌آپ پایگاه داده
+
+برای گرفتن بک‌آپ از پایگاه داده:
+
+```bash
+docker exec -t postgres-container pg_dump -U myuser mydatabase > backup.sql
+```
+
+### بازیابی پایگاه داده
+
+برای بازیابی بک‌آپ:
+
+```bash
+cat backup.sql | docker exec -i postgres-container psql -U myuser -d mydatabase
+```
+
+---
+
+## **جمع‌بندی**
+
+استفاده از Docker برای اجرای PostgreSQL، راهی ساده و منعطف برای مدیریت پایگاه داده است. با استفاده از این راهنما، می‌توانید PostgreSQL را از طریق Docker نصب کرده و با آن ارتباط برقرار کنید. اگر سؤالی داشتید، خوشحال می‌شوم کمک کنم!

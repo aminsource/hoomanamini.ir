@@ -1,0 +1,212 @@
+---
+title: 'Collections در جاوا'
+date: '2024-01-01 12:00'
+lastmod: '2024-01-01'
+tags: ['جاوا']
+draft: false
+summary: ''
+images: []
+---
+
+در زبان جاوا، **Collections Framework** یکی از قدرتمندترین ابزارها برای مدیریت و پردازش داده‌ها به صورت گروهی است. این چارچوب شامل **کلاس‌ها** و **اینترفیس‌هایی** برای ذخیره‌سازی و مدیریت داده‌ها به روش‌های متنوع است. در این مقاله، ما به بررسی مفاهیم، ساختارها، و مثال‌هایی برای درک بهتر این فریم‌ورک می‌پردازیم.
+
+---
+
+## **Collections Framework چیست؟**
+
+Collections Framework مجموعه‌ای از کلاس‌ها و اینترفیس‌ها است که برای ذخیره و مدیریت داده‌ها طراحی شده است. این چارچوب شامل:
+
+1. **اینترفیس‌ها**: قراردادهایی که کلاس‌ها برای پیاده‌سازی ساختارهای داده باید رعایت کنند (مثل `List`, `Set`, `Queue`, `Map`).
+2. **کلاس‌های پیاده‌سازی**: کلاس‌هایی که ساختارهای داده را ارائه می‌دهند (مثل `ArrayList`, `HashSet`, `HashMap`).
+3. **الگوریتم‌ها**: متدهایی برای انجام عملیات روی مجموعه‌ها (مثل مرتب‌سازی، جستجو، و موارد دیگر).
+
+---
+
+## **مفهوم پایه اینترفیس‌های Collections**
+
+### 1. **List**
+
+یک لیست مجموعه‌ای است که می‌تواند مقادیر تکراری را ذخیره کند و ترتیب درج عناصر را حفظ می‌کند. مهم‌ترین پیاده‌سازی‌های `List` عبارتند از:
+
+- **ArrayList**
+- **LinkedList**
+- **Vector**
+
+#### مثال:
+
+```java
+import java.util.ArrayList;
+
+public class ListExample {
+    public static void main(String[] args) {
+        // ایجاد یک لیست از نوع ArrayList
+        ArrayList<String> names = new ArrayList<>();
+        names.add("Ali");
+        names.add("Sara");
+        names.add("Ali"); // مقدار تکراری مجاز است
+
+        // نمایش عناصر لیست
+        for (String name : names) {
+            System.out.println(name);
+        }
+    }
+}
+```
+
+---
+
+### 2. **Set**
+
+یک مجموعه که مقادیر **تکراری** را نمی‌پذیرد و ترتیب عناصر را **حفظ نمی‌کند**. مهم‌ترین پیاده‌سازی‌های `Set` عبارتند از:
+
+- **HashSet**: ترتیب عناصر را حفظ نمی‌کند.
+- **LinkedHashSet**: ترتیب درج را حفظ می‌کند.
+- **TreeSet**: عناصر را مرتب نگه می‌دارد.
+
+#### مثال:
+
+```java
+import java.util.HashSet;
+
+public class SetExample {
+    public static void main(String[] args) {
+        // ایجاد یک مجموعه از نوع HashSet
+        HashSet<String> cities = new HashSet<>();
+        cities.add("Tehran");
+        cities.add("Shiraz");
+        cities.add("Tehran"); // مقدار تکراری ذخیره نمی‌شود
+
+        // نمایش عناصر مجموعه
+        for (String city : cities) {
+            System.out.println(city);
+        }
+    }
+}
+```
+
+---
+
+### 3. **Map**
+
+`Map` ساختاری است که **کلید-مقدار** (Key-Value) ذخیره می‌کند. کلیدها **یکتا** هستند، اما مقادیر می‌توانند تکراری باشند. مهم‌ترین پیاده‌سازی‌های `Map` عبارتند از:
+
+- **HashMap**
+- **LinkedHashMap**
+- **TreeMap**
+
+#### مثال:
+
+```java
+import java.util.HashMap;
+
+public class MapExample {
+    public static void main(String[] args) {
+        // ایجاد یک Map از نوع HashMap
+        HashMap<String, Integer> scores = new HashMap<>();
+        scores.put("Ali", 90);
+        scores.put("Sara", 85);
+        scores.put("Ali", 95); // مقدار قبلی بازنویسی می‌شود
+
+        // نمایش عناصر Map
+        for (String key : scores.keySet()) {
+            System.out.println(key + ": " + scores.get(key));
+        }
+    }
+}
+```
+
+---
+
+### 4. **Queue**
+
+`Queue` یک ساختار داده است که معمولاً برای صف (FIFO) استفاده می‌شود. مهم‌ترین پیاده‌سازی‌ها:
+
+- **PriorityQueue**: عناصر را بر اساس اولویت ذخیره می‌کند.
+- **LinkedList**: هم به عنوان لیست و هم به عنوان صف قابل استفاده است.
+
+#### مثال:
+
+```java
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class QueueExample {
+    public static void main(String[] args) {
+        Queue<String> queue = new LinkedList<>();
+        queue.add("Task1");
+        queue.add("Task2");
+        queue.add("Task3");
+
+        while (!queue.isEmpty()) {
+            System.out.println("Processing: " + queue.poll());
+        }
+    }
+}
+```
+
+---
+
+## **الگوریتم‌های Collections**
+
+`Collections` کلاس کمکی‌ای است که الگوریتم‌هایی مثل مرتب‌سازی و جستجو را فراهم می‌کند.
+
+#### مرتب‌سازی:
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class SortingExample {
+    public static void main(String[] args) {
+        ArrayList<Integer> numbers = new ArrayList<>();
+        numbers.add(5);
+        numbers.add(1);
+        numbers.add(3);
+
+        // مرتب‌سازی
+        Collections.sort(numbers);
+
+        System.out.println(numbers);
+    }
+}
+```
+
+#### جستجو:
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class SearchExample {
+    public static void main(String[] args) {
+        ArrayList<String> names = new ArrayList<>();
+        names.add("Ali");
+        names.add("Sara");
+        names.add("Maryam");
+
+        // مرتب‌سازی برای جستجو
+        Collections.sort(names);
+
+        // جستجو
+        int index = Collections.binarySearch(names, "Sara");
+        System.out.println("Index of Sara: " + index);
+    }
+}
+```
+
+---
+
+## **مزایای Collections Framework**
+
+1. **ساده‌سازی مدیریت داده‌ها**: ارائه ابزارهای آماده برای ذخیره و پردازش.
+2. **انعطاف‌پذیری**: انتخاب پیاده‌سازی مناسب برای نیازهای خاص.
+3. **عملکرد بالا**: بهینه‌سازی‌شده برای مدیریت داده‌های حجیم.
+4. **استفاده از الگوریتم‌های از پیش تعریف‌شده**: مانند مرتب‌سازی و جستجو.
+
+---
+
+## **جمع‌بندی**
+
+`Collections Framework` در جاوا ابزاری قدرتمند برای مدیریت داده‌ها است که با ارائه انواع مختلف ساختارهای داده و الگوریتم‌های مرتبط، کار توسعه‌دهندگان را ساده‌تر و سریع‌تر می‌کند. انتخاب صحیح نوع Collection به شما کمک می‌کند تا برنامه‌های بهینه‌تر و قابل نگهداری‌تری ایجاد کنید.
+
+برای تمرین بیشتر، توصیه می‌شود از پروژه‌های عملی استفاده کنید تا مفاهیم را بهتر درک کنید.

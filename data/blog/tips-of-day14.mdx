@@ -1,0 +1,219 @@
+---
+title: 'آشنایی با Generics در جاوا: مفهومی برای افزایش انعطاف‌پذیری و ایمنی در کدنویسی'
+date: '2024-01-01 14:00'
+lastmod: '2024-01-01'
+tags: ['جاوا']
+draft: false
+summary: ''
+images: []
+---
+
+### آشنایی با Generics در جاوا: مفهومی برای افزایش انعطاف‌پذیری و ایمنی در کدنویسی
+
+Generics یکی از ویژگی‌های قدرتمند زبان جاوا است که در نسخه 5 این زبان معرفی شد. این قابلیت به توسعه‌دهندگان این امکان را می‌دهد تا کلاس‌ها، اینترفیس‌ها و متدهایی تعریف کنند که بتوانند با انواع مختلف داده کار کنند، بدون اینکه نیاز به تکرار کد یا استفاده از تبدیل‌های نوع داشته باشند. در این مقاله، با Generics، مزایا، و نحوه استفاده از آن آشنا خواهیم شد.
+
+---
+
+### **مزایای Generics**
+
+1. **ایمنی نوع (Type Safety):**
+   - استفاده از یک نوع مشخص در کل ساختار داده یا متد، از بروز خطاهایی مانند `ClassCastException` جلوگیری می‌کند.
+2. **قابلیت استفاده مجدد (Reusability):**
+   - کدهای نوشته شده می‌توانند با انواع مختلف داده کار کنند، بدون نیاز به بازنویسی.
+3. **بررسی در زمان کامپایل (Compile-Time Checking):**
+   - خطاهای مرتبط با نوع داده در زمان کامپایل شناسایی می‌شوند، که باعث افزایش پایداری برنامه می‌شود.
+
+---
+
+### **نحوه تعریف Generics در جاوا**
+
+ساختار Generics با استفاده از پرانتزهای زاویه‌دار (`<>`) و یک یا چند پارامتر نوع مشخص می‌شود:
+
+```java
+class ClassName<T> {
+    // T جایگزینی برای نوع است
+}
+```
+
+---
+
+### **کاربردهای Generics**
+
+#### 1. **کلاس‌های عمومی (Generic Classes)**
+
+کلاس‌ها می‌توانند به گونه‌ای تعریف شوند که با انواع مختلف داده سازگار باشند.
+
+```java
+public class Box<T> {
+    private T item;
+
+    public void setItem(T item) {
+        this.item = item;
+    }
+
+    public T getItem() {
+        return item;
+    }
+}
+```
+
+**نمونه استفاده:**
+
+```java
+Box<String> stringBox = new Box<>();
+stringBox.setItem("Hello");
+System.out.println(stringBox.getItem());
+```
+
+---
+
+#### 2. **متدهای عمومی (Generic Methods)**
+
+متدها می‌توانند پارامترهای نوعی مخصوص به خود تعریف کنند که مستقل از پارامترهای نوع کلاس باشد.
+
+```java
+public static <T> void printArray(T[] array) {
+    for (T item : array) {
+        System.out.println(item);
+    }
+}
+```
+
+**نمونه استفاده:**
+
+```java
+Integer[] intArray = {1, 2, 3};
+String[] strArray = {"A", "B", "C"};
+printArray(intArray);
+printArray(strArray);
+```
+
+---
+
+#### 3. **اینترفیس‌های عمومی (Generic Interfaces)**
+
+اینترفیس‌ها نیز می‌توانند از Generics استفاده کنند.
+
+```java
+interface Pair<K, V> {
+    K getKey();
+    V getValue();
+}
+
+class KeyValuePair<K, V> implements Pair<K, V> {
+    private K key;
+    private V value;
+
+    public KeyValuePair(K key, V value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public K getKey() { return key; }
+    public V getValue() { return value; }
+}
+```
+
+**نمونه استفاده:**
+
+```java
+Pair<Integer, String> pair = new KeyValuePair<>(1, "Apple");
+System.out.println(pair.getKey() + " -> " + pair.getValue());
+```
+
+---
+
+#### 4. **محدودیت پارامترهای نوع (Bounded Type Parameters)**
+
+با استفاده از کلمه کلیدی `extends` می‌توانید نوع پارامترها را محدود کنید.
+
+```java
+public static <T extends Number> double sum(T num1, T num2) {
+    return num1.doubleValue() + num2.doubleValue();
+}
+```
+
+**نمونه استفاده:**
+
+```java
+System.out.println(sum(10, 20));      // ورودی Integer
+System.out.println(sum(10.5, 20.3)); // ورودی Double
+```
+
+---
+
+#### 5. **Wildcard (`?`)**
+
+Wildcard به معنی نوع ناشناخته است و برای انعطاف‌پذیری بیشتر استفاده می‌شود.
+
+- **Wildcard بدون محدودیت (`?`):**
+  به هر نوعی اجازه می‌دهد.
+
+```java
+  public void printList(List<?> list) {
+      for (Object obj : list) {
+          System.out.println(obj);
+      }
+  }
+```
+
+- **Wildcard محدود به بالا (`? extends Type`):**
+  به نوع خاص یا زیرکلاس‌های آن محدود می‌شود.
+
+```java
+  public void process(List<? extends Number> numbers) {
+      for (Number num : numbers) {
+          System.out.println(num.doubleValue());
+      }
+  }
+```
+
+- **Wildcard محدود به پایین (`? super Type`):**
+  به نوع خاص یا والدین آن محدود می‌شود.
+
+```java
+  public void addNumbers(List<? super Integer> list) {
+      list.add(10);
+      list.add(20);
+  }
+```
+
+---
+
+### **Type Erasure (حذف نوع در زمان اجرا)**
+
+Generics در جاوا با استفاده از مکانیزم حذف نوع پیاده‌سازی شده‌اند. در زمان اجرا، اطلاعات نوع حذف می‌شود و به نوع پایه (`Object`) یا محدودیت تعریف شده تبدیل می‌شود.
+
+**نمونه:**
+
+```java
+List<String> list = new ArrayList<>();
+list.add("Hello");
+String str = list.get(0); // ایمن
+```
+
+در زمان اجرا، کد به شکل زیر تغییر می‌کند:
+
+```java
+List list = new ArrayList();
+list.add("Hello");
+String str = (String) list.get(0); // تبدیل نوع صریح
+```
+
+---
+
+### **محدودیت‌های Generics**
+
+1. **عدم پشتیبانی از نوع‌های اولیه (Primitive Types):**  
+   برای استفاده از نوع‌های اولیه باید از کلاس‌های بسته‌بندی (`Integer`, `Double`, ...) استفاده کنید.
+2. **عدم دسترسی به نوع در زمان اجرا:**  
+   شما نمی‌توانید از پارامترهای نوع برای ایجاد نمونه یا بررسی نوع استفاده کنید (مثلاً `T obj = new T()` مجاز نیست).
+
+3. **عدم استفاده در بخش‌های استاتیک:**  
+   پارامترهای نوع در زمینه‌های استاتیک قابل استفاده نیستند.
+
+---
+
+### **نتیجه‌گیری**
+
+Generics ابزار قدرتمندی برای افزایش ایمنی نوع و انعطاف‌پذیری در کدنویسی جاوا است. این قابلیت به‌ویژه در طراحی مجموعه‌ها (`List`, `Map`, `Set`) و APIها کاربرد گسترده‌ای دارد. یادگیری و استفاده صحیح از Generics به شما کمک می‌کند تا کدی پایدارتر و قابل استفاده مجدد بنویسید.
