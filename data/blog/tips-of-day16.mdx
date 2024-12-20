@@ -1,0 +1,287 @@
+---
+title: 'برنامه‌نویسی چندنخی در جاوا (Multithreaded Programming)'
+date: '2024-01-01 16:00'
+lastmod: '2024-01-01'
+tags: ['جاوا']
+draft: false
+summary: ''
+images: []
+---
+
+**برنامه‌نویسی چندنخی در جاوا (Multithreaded Programming)**
+
+برنامه‌نویسی چندنخی یکی از مفاهیم کلیدی در جاوا است که به شما امکان می‌دهد چندین وظیفه (Task) را به‌صورت همزمان اجرا کنید. این قابلیت باعث افزایش کارایی برنامه و استفاده بهتر از منابع سیستم می‌شود. در این مقاله، مفاهیم اساسی، ابزارها و چالش‌های مرتبط با چندنخی در جاوا بررسی می‌شود.
+
+---
+
+### **مدل Thread در جاوا**
+
+جاوا مدل چندنخی ساده و کارآمدی ارائه می‌دهد. در این مدل:
+
+- **Thread** کوچک‌ترین واحد اجرایی در برنامه است.
+- **Main Thread** اولین Threadی است که هنگام اجرای برنامه ایجاد می‌شود.
+- چندین Thread می‌توانند همزمان اجرا شوند، و زمان‌بندی اجرای آن‌ها توسط JVM مدیریت می‌شود.
+
+#### **ویژگی‌های مدل Thread در جاوا**
+
+1. **استفاده کارآمد از منابع:** چندین Thread می‌توانند منابع حافظه را به اشتراک بگذارند.
+2. **پشتیبانی از همزمانی:** جاوا امکان اجرای همزمان چند وظیفه را فراهم می‌کند.
+3. **مدیریت ساده:** ابزارهای داخلی مانند کلاس `Thread` و رابط `Runnable` مدیریت Threadها را آسان کرده است.
+
+---
+
+### **ایجاد Thread در جاوا**
+
+جاوا دو روش اصلی برای ایجاد Threadها ارائه می‌دهد:
+
+1. **پیاده‌سازی رابط `Runnable`:**
+
+   - در این روش، کلاس شما رابط `Runnable` را پیاده‌سازی می‌کند و متد `run()` وظایف Thread را تعریف می‌کند.
+   - برای شروع Thread، از کلاس `Thread` و متد `start()` استفاده می‌کنید.
+
+```java
+   class MyRunnable implements Runnable {
+       public void run() {
+           System.out.println("Thread در حال اجرا است.");
+       }
+   }
+
+   public class Main {
+       public static void main(String[] args) {
+           Thread t = new Thread(new MyRunnable());
+           t.start();
+       }
+   }
+```
+
+2. **ارث‌بری از کلاس `Thread`:**
+
+   - کلاس شما از کلاس `Thread` ارث‌بری می‌کند و متد `run()` بازنویسی می‌شود.
+
+```java
+   class MyThread extends Thread {
+       public void run() {
+           System.out.println("Thread در حال اجرا است.");
+       }
+   }
+
+   public class Main {
+       public static void main(String[] args) {
+           MyThread t = new MyThread();
+           t.start();
+       }
+   }
+```
+
+---
+
+### **چندین Thread**
+
+برای اجرای همزمان چند وظیفه، می‌توانید چندین Thread ایجاد کنید. JVM تعیین می‌کند که کدام Thread در چه زمانی اجرا شود.
+
+#### مثال:
+
+```java
+class MyThread extends Thread {
+    private String name;
+
+    public MyThread(String name) {
+        this.name = name;
+    }
+
+    public void run() {
+        for (int i = 1; i <= 3; i++) {
+            System.out.println(name + " - گام " + i);
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        MyThread t1 = new MyThread("Thread-1");
+        MyThread t2 = new MyThread("Thread-2");
+
+        t1.start();
+        t2.start();
+    }
+}
+```
+
+---
+
+### **استفاده از `isAlive()` و `join()`**
+
+#### **`isAlive()`**
+
+این متد بررسی می‌کند که آیا Thread هنوز در حال اجرا است یا نه.
+
+```java
+Thread t = new Thread(() -> {
+    System.out.println("Thread در حال اجرا است.");
+});
+
+System.out.println(t.isAlive()); // خروجی: false
+
+```
+
+#### **`join()`**
+
+این متد باعث می‌شود یک Thread منتظر بماند تا Thread دیگری کار خود را تمام کند.
+
+```java
+class MyThread extends Thread {
+    public void run() {
+        for (int i = 1; i <= 3; i++) {
+            System.out.println("گام: " + i);
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        MyThread t1 = new MyThread();
+        t1.start();
+        try {
+            t1.join();
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted");
+        }
+        System.out.println("Thread اصلی تمام شد.");
+    }
+}
+```
+
+---
+
+### **اولویت Threadها**
+
+جاوا به شما امکان می‌دهد اولویت اجرای Threadها را با متد **`setPriority(int priority)`** تنظیم کنید.
+
+#### مقادیر اولویت:
+
+1. `Thread.MIN_PRIORITY` (1)
+2. `Thread.NORM_PRIORITY` (5 - پیش‌فرض)
+3. `Thread.MAX_PRIORITY` (10)
+
+#### مثال:
+
+```java
+class PriorityDemo extends Thread {
+    public void run() {
+        System.out.println(getName() + " - با اولویت: " + getPriority());
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        PriorityDemo t1 = new PriorityDemo();
+        PriorityDemo t2 = new PriorityDemo();
+
+        t1.setPriority(Thread.MAX_PRIORITY);
+        t2.setPriority(Thread.MIN_PRIORITY);
+
+        t1.start();
+        t2.start();
+    }
+}
+```
+
+---
+
+### **همگام‌سازی Threadها (Synchronization)**
+
+همگام‌سازی برای مدیریت دسترسی همزمان به منابع مشترک استفاده می‌شود و از مشکلاتی مانند **شرایط مسابقه (Race Condition)** جلوگیری می‌کند.
+
+#### استفاده از `synchronized`:
+
+```java
+class SharedResource {
+    synchronized void printMessage(String message) {
+        for (int i = 1; i <= 3; i++) {
+            System.out.println(message + " - " + i);
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        SharedResource resource = new SharedResource();
+
+        Thread t1 = new Thread(() -> resource.printMessage("Thread-1"));
+        Thread t2 = new Thread(() -> resource.printMessage("Thread-2"));
+
+        t1.start();
+        t2.start();
+    }
+}
+```
+
+---
+
+### **ارتباط بین Threadها**
+
+برای هماهنگی بین Threadها، می‌توانید از متدهای `wait()`, `notify()`, و `notifyAll()` استفاده کنید.
+
+#### مثال:
+
+```java
+class SharedResource {
+    private int data;
+    private boolean isAvailable = false;
+
+    synchronized void produce(int value) {
+        while (isAvailable) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted");
+            }
+        }
+        data = value;
+        isAvailable = true;
+        System.out.println("تولید: " + data);
+        notify();
+    }
+
+    synchronized int consume() {
+        while (!isAvailable) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted");
+            }
+        }
+        isAvailable = false;
+        System.out.println("مصرف: " + data);
+        notify();
+        return data;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        SharedResource resource = new SharedResource();
+
+        Thread producer = new Thread(() -> {
+            for (int i = 1; i <= 5; i++) {
+                resource.produce(i);
+            }
+        });
+
+        Thread consumer = new Thread(() -> {
+            for (int i = 1; i <= 5; i++) {
+                resource.consume();
+            }
+        });
+
+        producer.start();
+        consumer.start();
+    }
+}
+```
+
+---
+
+### **جمع‌بندی**
+
+برنامه‌نویسی چندنخی در جاوا ابزارهای قدرتمندی برای مدیریت وظایف همزمان فراهم می‌کند. با استفاده از مفاهیم Thread، همگام‌سازی، و ارتباط بین Threadها، می‌توانید برنامه‌هایی کارا و مقیاس‌پذیر ایجاد کنید. با این حال، طراحی دقیق برای جلوگیری از مشکلاتی مانند **Deadlock** و **کاهش کارایی** ضروری است.
