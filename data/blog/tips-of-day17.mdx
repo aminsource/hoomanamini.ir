@@ -1,0 +1,224 @@
+---
+title: 'Enumerations، Autoboxing و Annotations در جاوا'
+date: '2024-01-01 17:00'
+lastmod: '2024-01-01'
+tags: ['جاوا']
+draft: false
+summary: ''
+images: []
+---
+
+جاوا از نسخه ۵ سه ویژگی قدرتمند و کلیدی را معرفی کرده است که برنامه‌نویسی را ساده و کارآمدتر می‌کنند: **Enumerations**، **Autoboxing و Unboxing**، و **Annotations**. هر یک از این ویژگی‌ها برای رفع نیازهای خاص طراحی شده‌اند و در این مقاله به طور جامع به توضیح آن‌ها پرداخته می‌شود.
+
+---
+
+### **۱. Enumerations**
+
+#### **تعریف:**
+
+- Enumeration یا **`enum`** یک نوع داده خاص در جاوا است که به شما اجازه می‌دهد لیستی از مقادیر ثابت (مانند روزهای هفته، ماه‌های سال یا وضعیت‌ها) را تعریف کنید.
+- `enum` نوع داده‌ای تعریف می‌کند که فقط مقادیر مشخص‌شده را قبول می‌کند و از خطاهای ناشی از ورود داده‌های نامعتبر جلوگیری می‌کند.
+
+#### **ایجاد یک Enumeration:**
+
+```java
+enum Apple {
+    Jonathan, GoldenDel, RedDel, Winesap, Cortland;
+}
+```
+
+#### **استفاده از Enumeration:**
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        Apple ap = Apple.RedDel;
+
+        switch (ap) {
+            case Jonathan:
+                System.out.println("Jonathan انتخاب شد.");
+                break;
+            case RedDel:
+                System.out.println("Red Delicious انتخاب شد.");
+                break;
+            default:
+                System.out.println("نوع دیگری انتخاب شد.");
+        }
+    }
+}
+```
+
+#### **ویژگی‌های Enumeration:**
+
+1. **استفاده در دستور `switch`:** مقادیر `enum` به‌طور مستقیم در دستور `switch` پشتیبانی می‌شوند.
+2. **متدهای از پیش تعریف‌شده:**
+
+   - `name()`: نام مقدار `enum` را به صورت رشته برمی‌گرداند.
+   - `ordinal()`: موقعیت مقدار در لیست `enum` (از صفر شروع می‌شود) را بازمی‌گرداند.
+
+   #### مثال:
+
+```java
+   Apple ap = Apple.Winesap;
+   System.out.println("نام: " + ap.name());
+   System.out.println("اندیس: " + ap.ordinal());
+```
+
+3. **امکان اضافه کردن متد و سازنده:**
+   - هر `enum` می‌تواند شامل متدها و سازنده‌ها باشد.
+
+---
+
+### **۲. Autoboxing و Unboxing**
+
+#### **تعریف:**
+
+- **Autoboxing** فرآیندی است که در آن جاوا به‌طور خودکار یک نوع داده اولیه (مانند `int`) را به نوع wrapper مربوطه (مانند `Integer`) تبدیل می‌کند.
+- **Unboxing** فرآیند معکوس است که در آن جاوا نوع wrapper را به نوع داده اولیه تبدیل می‌کند.
+
+#### **مثال Autoboxing:**
+
+```java
+Integer i = 10; // Autoboxing از int به Integer
+```
+
+#### **مثال Unboxing:**
+
+```java
+Integer i = 10;
+int j = i; // Unboxing از Integer به int
+```
+
+#### **مزایا:**
+
+1. کاهش پیچیدگی کدنویسی.
+2. بهبود خوانایی و ساده‌تر شدن کد.
+
+#### **احتیاط‌ها:**
+
+- استفاده بیش‌ازحد از wrapper types به جای primitive types می‌تواند منجر به کاهش کارایی شود.
+- ممکن است باعث ایجاد خطاهای زمان اجرا شود اگر مقدار null در یک عملیات Unboxing استفاده شود.
+
+#### **مثال با جمع دو عدد:**
+
+```java
+Integer a = 5, b = 10;
+int sum = a + b; // Autoboxing و Unboxing
+System.out.println("مجموع: " + sum);
+```
+
+---
+
+### **۳. Annotations**
+
+#### **تعریف:**
+
+- **Annotations** ابزاری برای افزودن متاداده به کد منبع است.
+- این متاداده‌ها می‌توانند توسط ابزارهای توسعه، کامپایلر، و یا در زمان اجرا مورد استفاده قرار گیرند.
+
+#### **کاربردهای Annotations:**
+
+1. **پیکربندی و مستندسازی:**
+   - مانند `@Override` برای اطمینان از بازنویسی صحیح متدها.
+2. **کنترل رفتار در زمان اجرا:**
+   - مانند `@SuppressWarnings` برای خاموش کردن هشدارها.
+3. **تزریق وابستگی:**
+   - در فریم‌ورک‌هایی مانند Spring و Hibernate.
+
+#### **ایجاد یک Annotation سفارشی:**
+
+```java
+import java.lang.annotation.*;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+@interface MyAnnotation {
+    String value();
+}
+```
+
+#### **استفاده از Annotation سفارشی:**
+
+```java
+public class Main {
+    @MyAnnotation(value = "مثال")
+    public void myMethod() {
+        System.out.println("این یک متد Annotated است.");
+    }
+}
+```
+
+#### **ویژگی‌های Annotation:**
+
+1. **Retention Policy:**
+
+   - تعیین می‌کند Annotation تا چه مرحله‌ای حفظ شود.
+   - **SOURCE**: فقط در کد منبع نگهداری می‌شود.
+   - **CLASS**: در فایل بایت‌کد نگهداری می‌شود اما در زمان اجرا در دسترس نیست.
+   - **RUNTIME**: در زمان اجرا نیز در دسترس است.
+
+2. **Target:**
+   - مشخص می‌کند Annotation روی چه بخشی از کد (کلاس، متد، متغیر) اعمال شود.
+
+#### **Annotation‌های رایج در جاوا:**
+
+1. **`@Override`:**
+
+   - برای اطمینان از بازنویسی صحیح یک متد استفاده می‌شود.
+
+```java
+   @Override
+   public String toString() {
+       return "مثال بازنویسی شده";
+   }
+```
+
+2. **`@Deprecated`:**
+
+   - نشان می‌دهد که یک متد یا کلاس دیگر نباید استفاده شود.
+
+```java
+   @Deprecated
+   public void oldMethod() {
+       System.out.println("این متد قدیمی است.");
+   }
+```
+
+3. **`@SuppressWarnings`:**
+   - برای خاموش کردن هشدارهای خاص استفاده می‌شود.
+
+```java
+   @SuppressWarnings("unchecked")
+   public void myMethod() {
+       List list = new ArrayList();
+   }
+```
+
+#### **خواندن Annotation‌ها در زمان اجرا:**
+
+```java
+import java.lang.reflect.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        Method m = Main.class.getMethod("myMethod");
+        MyAnnotation annotation = m.getAnnotation(MyAnnotation.class);
+        System.out.println("مقدار Annotation: " + annotation.value());
+    }
+
+    @MyAnnotation(value = "مثال")
+    public void myMethod() {
+        System.out.println("متد Annotated");
+    }
+}
+```
+
+---
+
+### **جمع‌بندی**
+
+- **Enumerations** ابزاری قدرتمند برای تعریف مقادیر ثابت و محدود در کد هستند.
+- **Autoboxing و Unboxing** کدنویسی را ساده‌تر کرده و تبدیل بین داده‌های اولیه و Wrapperها را خودکار کرده است.
+- **Annotations** امکان افزودن متاداده به کد را فراهم کرده و نقش مهمی در توسعه فریم‌ورک‌ها و ابزارهای جاوا دارد.
+
+با استفاده از این ویژگی‌ها، کدنویسی در جاوا ساده‌تر، قابل مدیریت‌تر و کارآمدتر شده است.

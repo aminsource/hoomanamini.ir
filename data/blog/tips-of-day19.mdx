@@ -1,0 +1,175 @@
+---
+title: 'سروِلِت‌ها در جاوا'
+date: '2024-01-01 19:00'
+lastmod: '2024-01-01'
+tags: ['جاوا']
+draft: false
+summary: ''
+images: []
+---
+
+**سروِلِت‌ها (Servlets)** یکی از مهم‌ترین فناوری‌های جاوا برای توسعه برنامه‌های وب سمت سرور هستند. آن‌ها امکان پردازش درخواست‌ها و تولید پاسخ‌های پویا را فراهم می‌کنند و برای ساخت برنامه‌های مبتنی بر HTTP استفاده می‌شوند. این مقاله به معرفی سروِلِت‌ها، چرخه حیات آن‌ها، توسعه و مثال‌های عملی می‌پردازد.
+
+---
+
+### **۱. سروِلِت چیست؟**
+
+یک **Servlet** یک کلاس جاوا است که برای پاسخ به درخواست‌های سمت سرور طراحی شده است. این فناوری معمولاً برای پردازش و پاسخ به درخواست‌های HTTP (مانند GET و POST) استفاده می‌شود. سروِلِت‌ها در سمت سرور اجرا می‌شوند و نتایج را به مرورگر یا کلاینت ارسال می‌کنند.
+
+#### **ویژگی‌های کلیدی سروِلِت‌ها:**
+
+- **قابل حمل بودن:** اجرا روی هر سروری که از جاوا پشتیبانی کند.
+- **پشتیبانی از پروتکل HTTP:** پردازش درخواست‌ها و پاسخ‌ها با استفاده از متدهایی مانند `doGet()` و `doPost()`.
+- **قابلیت استفاده مجدد:** یک بار نوشته شده و در محیط‌های مختلف قابل استفاده است.
+- **انعطاف‌پذیری بالا:** امکان ترکیب با فناوری‌هایی مانند JSP و JDBC برای ساخت برنامه‌های وب پویا.
+
+---
+
+### **۲. چرخه حیات سروِلِت**
+
+چرخه حیات سروِلِت شامل سه مرحله اصلی است که توسط کانتینر سروِلِت (مانند Apache Tomcat) مدیریت می‌شود:
+
+1. **ایجاد (Initialization):**
+
+   - سرور متد `init()` را یک بار فراخوانی می‌کند تا سروِلِت آماده شود.
+   - این متد برای مقداردهی اولیه سروِلِت استفاده می‌شود.
+
+```java
+   @Override
+   public void init() throws ServletException {
+       // مقداردهی اولیه
+   }
+```
+
+2. **پردازش درخواست (Request Processing):**
+
+   - برای هر درخواست، متد `service()` فراخوانی می‌شود که بر اساس نوع درخواست (GET یا POST) متد مناسب (`doGet()` یا `doPost()`) را اجرا می‌کند.
+
+```java
+   @Override
+   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+       response.getWriter().write("Hello from GET request!");
+   }
+```
+
+3. **تخریب (Destruction):**
+
+   - هنگام خاموش شدن سرور یا حذف سروِلِت، متد `destroy()` فراخوانی می‌شود.
+
+```java
+   @Override
+   public void destroy() {
+       // عملیات پاکسازی
+   }
+```
+
+---
+
+### **۳. ایجاد یک سروِلِت ساده**
+
+#### **مثال کامل:**
+
+```java
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import java.io.*;
+
+public class HelloServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        out.println("<h1>Hello, Servlet!</h1>");
+    }
+}
+```
+
+#### **مراحل اجرا در یک Application Server:**
+
+1. **ایجاد کلاس:** فایل جاوا را با نام `HelloServlet.java` ذخیره کنید.
+2. **کامپایل:**
+
+```bash
+   javac HelloServlet.java
+```
+
+3. **استقرار:** فایل کامپایل‌شده `.class` را در مسیر `WEB-INF/classes` پروژه قرار دهید.
+4. **پیکربندی:** فایل `web.xml` را به شکل زیر تنظیم کنید:
+
+```xml
+   <servlet>
+       <servlet-name>HelloServlet</servlet-name>
+       <servlet-class>HelloServlet</servlet-class>
+   </servlet>
+
+   <servlet-mapping>
+       <servlet-name>HelloServlet</servlet-name>
+       <url-pattern>/hello</url-pattern>
+   </servlet-mapping>
+```
+
+5. **راه‌اندازی:**
+
+   - سرور وب (مانند Apache Tomcat) را اجرا کنید. اگر Tomcat نصب نیست، می‌توانید آن را از وب‌سایت رسمی دانلود کرده و تنظیمات اولیه را انجام دهید.
+   - فایل پروژه را در پوشه `webapps` قرار دهید.
+
+6. **آزمایش سروِلِت:**
+   - مرورگر خود را باز کرده و به آدرس زیر بروید:
+
+```
+     http://localhost:8080/your-app/hello
+```
+
+---
+
+### **۴. کار با پارامترها در سروِلِت**
+
+سروِلِت‌ها می‌توانند داده‌های ارسال‌شده از کلاینت را دریافت و پردازش کنند.
+
+#### **مثال:** پردازش پارامتر GET
+
+```java
+@Override
+protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String name = request.getParameter("name");
+    response.setContentType("text/html");
+    PrintWriter out = response.getWriter();
+    out.println("<h1>Hello, " + name + "!</h1>");
+}
+```
+
+- URL نمونه:
+
+```
+  http://localhost:8080/your-app/hello?name=John
+```
+
+- خروجی: `Hello, John!`
+
+#### **مثال:** پردازش پارامتر POST
+
+```java
+@Override
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String username = request.getParameter("username");
+    response.setContentType("text/html");
+    PrintWriter out = response.getWriter();
+    out.println("<h1>Welcome, " + username + "!</h1>");
+}
+```
+
+---
+
+### **۵. مزایای سروِلِت‌ها**
+
+1. **پشتیبانی از چندین درخواست:** با استفاده از چندین Thread، هر سروِلِت می‌تواند به درخواست‌های متعددی پاسخ دهد.
+2. **قابلیت حمل:** روی هر سرور پشتیبانی‌شده از جاوا اجرا می‌شود.
+3. **انعطاف‌پذیری بالا:** قابلیت ترکیب با فناوری‌های پیشرفته مانند JSP، JDBC، و Spring Framework.
+4. **مدیریت ساده چرخه حیات:** توسط کانتینر سروِلِت انجام می‌شود.
+
+---
+
+### **۶. نتیجه‌گیری**
+
+سروِلِت‌ها یکی از فناوری‌های اصلی برای توسعه برنامه‌های وب جاوا هستند. آن‌ها امکان ایجاد برنامه‌هایی سریع، پویا و قابل حمل را فراهم می‌کنند. یادگیری اصول سروِلِت‌ها، مقدمه‌ای برای استفاده از فناوری‌های پیشرفته‌تر مانند JSP و Spring است.

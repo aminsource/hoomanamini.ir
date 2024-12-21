@@ -1,0 +1,217 @@
+---
+title: 'Java Beans در جاوا'
+date: '2024-01-01 18:00'
+lastmod: '2024-01-01'
+tags: ['جاوا']
+draft: false
+summary: ''
+images: []
+---
+
+**Java Beans** یکی از مؤلفه‌های کلیدی جاوا برای ایجاد **کامپوننت‌های نرم‌افزاری قابل استفاده مجدد** است. این تکنولوژی به برنامه‌نویسان امکان می‌دهد تا سیستم‌های پیچیده را با استفاده از قطعات نرم‌افزاری ساخته‌شده توسط خود یا دیگران توسعه دهند. در این مقاله به معرفی، ساختار، ویژگی‌ها و کاربردهای Java Beans پرداخته می‌شود.
+
+---
+
+### **۱. Java Bean چیست؟**
+
+یک **Java Bean** یک قطعه نرم‌افزاری است که به گونه‌ای طراحی شده تا در محیط‌های مختلف قابل استفاده مجدد باشد. این کامپوننت می‌تواند کارکردهایی ساده مانند نمایش داده‌ها یا عملیات پیچیده‌ای مانند پردازش داده‌های مالی را انجام دهد.
+
+#### **ویژگی‌های کلیدی:**
+
+- **قابلیت استفاده مجدد:** Java Beans در محیط‌های مختلف قابل استفاده هستند.
+- **مستقل یا وابسته به دیگر کامپوننت‌ها:** می‌توانند مستقل عمل کنند یا با دیگر کامپوننت‌ها تعامل داشته باشند.
+- **تعامل با کاربر:** می‌توانند به صورت بصری (مانند دکمه‌ها) یا پنهان از دید کاربر (مانند پردازش داده‌ها) باشند.
+
+---
+
+### **۲. مزایای Java Beans**
+
+۱. **انعطاف‌پذیری:** Java Beans قابلیت اجرا در محیط‌های مختلف مانند برنامه‌های دسکتاپ یا وب را دارند.\
+۲. **قابلیت استفاده مجدد:** یک Bean می‌تواند در پروژه‌های مختلف بدون تغییر مورد استفاده قرار گیرد.\
+۳. **پشتیبانی از معماری جاوا:** از مزایای "یک‌بار بنویس، همه‌جا اجرا کن" بهره می‌برد.\
+۴. **سادگی در توسعه:** طراحی مبتنی بر Java Beans زمان توسعه را کاهش می‌دهد.
+
+---
+
+### **۳. ویژگی‌های Java Beans**
+
+#### **الف. Properties:**
+
+- یک Bean می‌تواند شامل **خصوصیات** (Properties) باشد که می‌توان آن‌ها را خواند یا تنظیم کرد.
+- **انواع Properties:**
+  1. **Bound Properties:** تغییر مقدار یک خاصیت به دیگر کامپوننت‌ها اطلاع داده می‌شود.
+  2. **Constrained Properties:** مقدار جدید تنها در صورتی تنظیم می‌شود که توسط Listener تأیید شود.
+
+#### **ب. Events:**
+
+- Java Beans از **الگوی رویدادها (Event Handling)** پشتیبانی می‌کنند که به کامپوننت‌ها امکان تعامل با یکدیگر را می‌دهد.
+
+#### **ج. روش‌ها (Methods):**
+
+- Bean‌ها می‌توانند متدهایی برای انجام وظایف خاص داشته باشند که از طریق دیگر کامپوننت‌ها فراخوانی می‌شوند.
+
+#### **د. پایداری (Persistence):**
+
+- **پایداری (Persistence)** به قابلیت یک Java Bean برای ذخیره و بازیابی وضعیت خود اشاره دارد. این ویژگی به Bean‌ها اجازه می‌دهد تا داده‌ها یا تنظیمات خود را حتی پس از بسته شدن برنامه حفظ کنند. این کار معمولاً با استفاده از **Serialization** انجام می‌شود.
+- **نحوه عملکرد:** هنگامی که یک Bean از اینترفیس `Serializable` پیروی کند، می‌توان آن را در یک فایل یا پایگاه داده ذخیره کرد و در اجراهای بعدی دوباره بارگذاری نمود.
+
+#### **مثال:** ذخیره و بازیابی یک Bean
+
+```java
+import java.io.*;
+
+public class PersistentBean implements Serializable {
+    private String name;
+    private int age;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public static void main(String[] args) {
+        try {
+            // ایجاد Bean و ذخیره آن
+            PersistentBean bean = new PersistentBean();
+            bean.setName("John");
+            bean.setAge(30);
+
+            // ذخیره در فایل
+            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("bean.ser"));
+            out.writeObject(bean);
+            out.close();
+
+            // بازیابی Bean از فایل
+            ObjectInputStream in = new ObjectInputStream(new FileInputStream("bean.ser"));
+            PersistentBean restoredBean = (PersistentBean) in.readObject();
+            in.close();
+
+            System.out.println("Name: " + restoredBean.getName());
+            System.out.println("Age: " + restoredBean.getAge());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+- Bean‌ها می‌توانند وضعیت خود را ذخیره و در اجراهای بعدی بازیابی کنند.
+
+---
+
+### **۴. الگوهای طراحی در Java Beans**
+
+Java Beans برای پشتیبانی از قابلیت‌هایی مانند **Properties** و **Events** از الگوهای طراحی خاصی استفاده می‌کند:
+
+1. **Getter و Setter:**
+
+   - برای دسترسی به Properties از متدهای `get` و `set` استفاده می‌شود.
+   - مثال:
+
+```java
+     public class MyBean {
+         private String name;
+
+         public String getName() {
+             return name;
+         }
+
+         public void setName(String name) {
+             this.name = name;
+         }
+     }
+```
+
+2. **Listener‌ها:**\
+   برای مدیریت رویدادها از الگوهای Listener استفاده می‌شود.
+
+---
+
+### **۵. استفاده از JavaBeans API**
+
+#### **کلاس‌ها و اینترفیس‌های اصلی:**
+
+1. **`Introspector`\*\***\*\*\*\*:\*\*
+   - برای بررسی اطلاعات درباره Bean.
+2. **`PropertyDescriptor`\*\***\*\*\*\*:\*\*
+   - برای دسترسی به خصوصیات یک Bean.
+3. **`EventSetDescriptor`\*\***\*\*\*\*:\*\*
+   - برای دسترسی به رویدادها.
+
+#### **مثال ساده:**
+
+```java
+import java.beans.*;
+
+public class BeanExample {
+    public static void main(String[] args) throws Exception {
+        BeanInfo beanInfo = Introspector.getBeanInfo(MyBean.class);
+        for (PropertyDescriptor property : beanInfo.getPropertyDescriptors()) {
+            System.out.println("Property: " + property.getName());
+        }
+    }
+}
+
+class MyBean {
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+```
+
+---
+
+### **۶. مثال عملی**
+
+یک Bean که لیستی از محصولات را مدیریت می‌کند:
+
+```java
+import java.io.Serializable;
+
+public class ProductBean implements Serializable {
+    private String productName;
+    private double price;
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+}
+```
+
+---
+
+### **۷. نتیجه‌گیری**
+
+Java Beans ابزاری قدرتمند برای طراحی کامپوننت‌های نرم‌افزاری است که قابلیت استفاده مجدد دارند. این فناوری با ترکیب قابلیت‌های پیشرفته جاوا و الگوهای طراحی استاندارد، امکان ایجاد سیستم‌های مقیاس‌پذیر و انعطاف‌پذیر را فراهم می‌کند.
+
+با استفاده از Java Beans، برنامه‌نویسان می‌توانند کامپوننت‌هایی را طراحی کنند که به راحتی قابل استفاده در برنامه‌های مختلف باشند و از آن‌ها برای ایجاد سیستم‌های پیچیده و قابل توسعه استفاده کنند.
