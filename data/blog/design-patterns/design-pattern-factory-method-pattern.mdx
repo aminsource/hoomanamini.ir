@@ -1,0 +1,200 @@
+---
+title: ' الگوی طراحی Factory Method (روش کارخانه)'
+date: '2025-03-19 10:00'
+lastmod: '2025-03-19 '
+tags: ['Factory Method', 'Design Patterns', 'Java', 'Spring']
+draft: false
+summary: ''
+images: []
+---
+
+## **مقدمه**
+
+در برنامه‌نویسی شیءگرا، یکی از چالش‌های بزرگ، **مدیریت وابستگی‌های بین کلاس‌ها** است. اگر کد ما به کلاس‌های مشخص وابسته باشد، تغییرات در یک بخش می‌تواند کل سیستم را تحت تأثیر قرار دهد. برای حل این مشکل، **Factory Method Pattern** معرفی شده است.
+
+این مقاله **گام‌به‌گام** این الگوی طراحی را توضیح داده و **با مثال‌های کاربردی در جاوا** نحوه‌ی پیاده‌سازی آن را آموزش می‌دهد.
+
+---
+
+## **🔹 مشکل اصلی: وابستگی مستقیم به کلاس‌های مشخص**
+
+### **قبل از استفاده از Factory Method**
+
+فرض کنید یک فروشگاه پیتزا داریم که انواع مختلف پیتزا را تولید می‌کند:
+
+```java
+public class PizzaStore {
+    public Pizza orderPizza(String type) {
+        Pizza pizza;
+
+        if (type.equals("cheese")) {
+            pizza = new CheesePizza();
+        } else if (type.equals("pepperoni")) {
+            pizza = new PepperoniPizza();
+        } else {
+            return null;
+        }
+
+        pizza.prepare();
+        pizza.bake();
+        pizza.cut();
+        pizza.box();
+        return pizza;
+    }
+}
+```
+
+### **مشکلات این روش**
+
+1. **وابستگی مستقیم به کلاس‌های مشخص:** اگر یک نوع جدید پیتزا اضافه شود، باید این متد تغییر کند.
+2. **نقض اصل Open/Closed:** این اصل می‌گوید که کلاس‌ها باید **برای توسعه باز و برای تغییر بسته باشند**، اما در اینجا برای اضافه کردن پیتزا جدید، باید `PizzaStore` را تغییر دهیم.
+3. **عدم انعطاف‌پذیری:** اگر بخواهیم فروشگاه‌های مختلف با سبک‌های متفاوت داشته باشیم، باید `PizzaStore` را برای هر فروشگاه تغییر دهیم.
+
+---
+
+## **🔹 راه‌حل: استفاده از Factory Method Pattern**
+
+**Factory Method** یک **متد انتزاعی** در کلاس والد ایجاد می‌کند که مسئول **ایجاد اشیاء توسط زیرکلاس‌ها** است. این متد باعث می‌شود که کلاس والد به جای وابستگی به کلاس‌های مشخص، فقط به **یک انتزاع (interface یا abstract class)** وابسته باشد.
+
+### **۱- تعریف کلاس انتزاعی `Pizza`**
+
+```java
+public abstract class Pizza {
+    String name;
+
+    void prepare() {
+        System.out.println("Preparing " + name);
+    }
+    void bake() {
+        System.out.println("Baking " + name);
+    }
+    void cut() {
+        System.out.println("Cutting " + name);
+    }
+    void box() {
+        System.out.println("Boxing " + name);
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+```
+
+### **۲- پیاده‌سازی کلاس‌های مختلف پیتزا**
+
+```java
+public class CheesePizza extends Pizza {
+    public CheesePizza() {
+        name = "Cheese Pizza";
+    }
+}
+
+public class PepperoniPizza extends Pizza {
+    public PepperoniPizza() {
+        name = "Pepperoni Pizza";
+    }
+}
+```
+
+### **۳- ایجاد کلاس `PizzaStore` با Factory Method**
+
+```java
+public abstract class PizzaStore {
+    public Pizza orderPizza(String type) {
+        Pizza pizza = createPizza(type); // Factory Method
+
+        pizza.prepare();
+        pizza.bake();
+        pizza.cut();
+        pizza.box();
+
+        return pizza;
+    }
+
+    protected abstract Pizza createPizza(String type);
+}
+```
+
+### **۴- پیاده‌سازی زیرکلاس‌های `PizzaStore`**
+
+```java
+public class NYPizzaStore extends PizzaStore {
+    @Override
+    protected Pizza createPizza(String type) {
+        if (type.equals("cheese")) {
+            return new CheesePizza();
+        } else if (type.equals("pepperoni")) {
+            return new PepperoniPizza();
+        } else {
+            return null;
+        }
+    }
+}
+```
+
+```java
+public class ChicagoPizzaStore extends PizzaStore {
+    @Override
+    protected Pizza createPizza(String type) {
+        if (type.equals("cheese")) {
+            return new CheesePizza();
+        } else if (type.equals("pepperoni")) {
+            return new PepperoniPizza();
+        } else {
+            return null;
+        }
+    }
+}
+```
+
+### **۵- استفاده از Factory Method در کلاس `Main`**
+
+```java
+public class PizzaTestDrive {
+    public static void main(String[] args) {
+        PizzaStore nyStore = new NYPizzaStore();
+        PizzaStore chicagoStore = new ChicagoPizzaStore();
+
+        Pizza pizza = nyStore.orderPizza("cheese");
+        System.out.println("Ethan ordered a " + pizza.getName() + "\n");
+
+        pizza = chicagoStore.orderPizza("cheese");
+        System.out.println("Joel ordered a " + pizza.getName() + "\n");
+    }
+}
+```
+
+✅ **نتیجه:**
+
+```
+Preparing Cheese Pizza
+Baking Cheese Pizza
+Cutting Cheese Pizza
+Boxing Cheese Pizza
+Ethan ordered a Cheese Pizza
+
+Preparing Cheese Pizza
+Baking Cheese Pizza
+Cutting Cheese Pizza
+Boxing Cheese Pizza
+Joel ordered a Cheese Pizza
+```
+
+---
+
+## **🔹 مزایای Factory Method Pattern**
+
+✅ **حذف وابستگی مستقیم:** `PizzaStore` دیگر مستقیماً به کلاس‌های مشخص وابسته نیست.  
+✅ **افزایش انعطاف‌پذیری:** اگر فروشگاه جدیدی اضافه شود، فقط یک `PizzaStore` جدید ایجاد می‌شود.  
+✅ **رعایت اصل Open/Closed:** برای افزودن پیتزای جدید، نیازی به تغییر در `PizzaStore` نیست.  
+✅ **کاهش پیچیدگی:** فرآیند ایجاد اشیاء جدا شده و مدیریت آن آسان‌تر شده است.
+
+---
+
+## **🔹 نتیجه‌گیری**
+
+الگوی **Factory Method** یک روش **شیءگرای پیشرفته** برای جداسازی منطق ایجاد اشیاء از کلاس‌های اصلی است.
+این الگو **به ما کمک می‌کند وابستگی‌های غیرضروری را حذف کنیم، کد ما منعطف‌تر شود و اصل Open/Closed رعایت شود.**
+
+🎯 **اگر می‌خواهید نرم‌افزاری توسعه‌پذیر و قابل نگهداری بنویسید، Factory Method Pattern یک ابزار ضروری برای شماست!** 🚀

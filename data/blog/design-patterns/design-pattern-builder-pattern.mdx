@@ -1,0 +1,230 @@
+---
+title: 'الگوی طراحی Builder (سازنده)'
+date: '2025-03-14 21:00'
+lastmod: '2025-03-14 '
+tags: ['Builder', 'Design Patterns', 'Java', 'Spring']
+draft: false
+summary: ''
+images: []
+---
+
+## الگوی طراحی Builder (سازنده)
+
+### مقدمه
+
+الگوی طراحی Builder یکی از پرکاربردترین الگوهای طراحی شیءگرا از دسته الگوهای ساختاری (Creational Patterns) است. این الگو کمک می‌کند تا اشیاء پیچیده را به شیوه‌ای شفاف و مرحله به مرحله ایجاد کنیم. با استفاده از این الگو، مدیریت کد، خوانایی و قابلیت نگهداری آن به شکل چشمگیری افزایش پیدا می‌کند.
+
+### چه مشکلی را حل می‌کند؟
+
+فرض کنید کلاسی دارید که چندین فیلد یا ویژگی دارد و ساختن یک نمونه از آن نیازمند استفاده از constructor با پارامترهای متعدد است:
+
+```java
+class User {
+    private String name;
+    private String family;
+    private int age;
+    private String email;
+    private String phone;
+
+    User(String name, String family, int age, String email, String phone) {
+        this.name = name;
+        this.family = family;
+        this.age = age;
+        this.email = email;
+        this.phone = phone;
+    }
+}
+```
+
+استفاده از constructor با پارامترهای زیاد دو مشکل اساسی دارد:
+
+- کاهش خوانایی کد
+- احتمال بروز اشتباه به دلیل نیاز به رعایت دقیق ترتیب پارامترها
+
+### راه حل الگوی Builder
+
+الگوی Builder با ایجاد یک کلاس داخلی Builder این مشکل را حل می‌کند. در این روش، اشیاء به صورت زنجیره‌ای و مرحله‌به‌مرحله ساخته می‌شوند:
+
+```java
+class User {
+    private String name;
+    private String family;
+    private int age;
+    private String email;
+    private String phone;
+
+    private User() {}
+
+    public static class Builder {
+        private final User user;
+
+        public Builder() {
+            user = new User();
+        }
+
+        public Builder name(String name) {
+            user.name = name;
+            return this;
+        }
+
+        public Builder family(String family) {
+            user.family = family;
+            return this;
+        }
+
+        public Builder age(int age) {
+            user.age = age;
+            return this;
+        }
+
+        public Builder email(String email) {
+            user.email = email;
+            return this;
+        }
+
+        public Builder phone(String phone) {
+            user.phone = phone;
+            return this;
+        }
+
+        public User build() {
+            return user;
+        }
+    }
+}
+```
+
+اکنون ساختن شیء User بسیار شفاف و خوانا می‌شود:
+
+```java
+User user = new User.Builder()
+                    .name("Ali")
+                    .family("Ahmadi")
+                    .age(30)
+                    .email("ali@test.com")
+                    .phone("09121234567")
+                    .build();
+```
+
+### مثال‌های بیشتر
+
+**مثال ۱: کلاس خودرو**
+
+```java
+class Car {
+    private String brand;
+    private String model;
+    private int year;
+    private String color;
+
+    private Car() {}
+
+    public static class Builder {
+        private final Car car;
+
+        public Builder() {
+            car = new Car();
+        }
+
+        public Builder brand(String brand) {
+            car.brand = brand;
+            return this;
+        }
+
+        public Builder model(String model) {
+            car.model = model;
+            return this;
+        }
+
+        public Builder year(int year) {
+            car.year = year;
+            return this;
+        }
+
+        public Builder color(String color) {
+            car.color = color;
+            return this;
+        }
+
+        public Car build() {
+            return car;
+        }
+    }
+}
+
+Car car = new Car.Builder()
+                .brand("BMW")
+                .model("X6")
+                .year(2022)
+                .color("Black")
+                .build();
+```
+
+**مثال ۲: کلاس کامپیوتر**
+
+```java
+class Computer {
+    private String cpu;
+    private String ram;
+    private String storage;
+    private String gpu;
+
+    private Computer() {}
+
+    public static class Builder {
+        private final Computer computer;
+
+        public Builder() {
+            computer = new Computer();
+        }
+
+        public Builder cpu(String cpu) {
+            computer.cpu = cpu;
+            return this;
+        }
+
+        public Builder ram(String ram) {
+            computer.ram = ram;
+            return this;
+        }
+
+        public Builder storage(String storage) {
+            computer.storage = storage;
+            return this;
+        }
+
+        public Builder gpu(String gpu) {
+            computer.gpu = gpu;
+            return this;
+        }
+
+        public Computer build() {
+            return computer;
+        }
+    }
+}
+
+Computer computer = new Computer.Builder()
+                            .cpu("Intel Core i7")
+                            .ram("16GB")
+                            .storage("512GB SSD")
+                            .gpu("RTX 3060")
+                            .build();
+```
+
+### کاربرد الگوی Builder در Spring
+
+Spring به‌طور گسترده از الگوی Builder در کلاس‌های خود استفاده می‌کند، به ویژه در مواردی که نیاز به ایجاد Beanهای پیچیده و تنظیمات متعدد باشد. نمونه بارز استفاده از این الگو در Spring کلاس `RestTemplateBuilder` است که برای ساختن اشیاء `RestTemplate` استفاده می‌شود:
+
+```java
+RestTemplate restTemplate = new RestTemplateBuilder()
+                                  .setConnectTimeout(Duration.ofSeconds(10))
+                                  .setReadTimeout(Duration.ofSeconds(10))
+                                  .build();
+```
+
+این مثال نشان می‌دهد که چگونه Spring از Builder برای ارائه روشی انعطاف‌پذیر و خوانا برای ساخت اشیاء پیچیده استفاده می‌کند.
+
+### جمع‌بندی
+
+الگوی Builder یکی از الگوهای بسیار مفید و پرکاربرد است که به توسعه‌دهندگان اجازه می‌دهد اشیاء پیچیده را به روشی خوانا، قابل نگهداری و با انعطاف بسیار بالا ایجاد کنند. استفاده درست از این الگو موجب بهبود چشمگیر کیفیت و نگهداری کد در طول زمان خواهد شد.

@@ -1,0 +1,247 @@
+---
+title: 'الگوی فرمان (Command Pattern)'
+date: '2025-03-19 18:30'
+lastmod: '2025-03-19 '
+tags: ['command-pattern', 'design-patterns', 'software-design']
+draft: false
+summary: ''
+images: []
+---
+
+## مقدمه
+
+در بسیاری از برنامه‌های نرم‌افزاری، نیاز به ایجاد **درخواست‌های قابل انعطاف و بازگشت‌پذیر** وجود دارد. برای مثال، در یک **سیستم کنترل از راه دور**، باید بتوانیم دستگاه‌های مختلف را کنترل کرده، درخواست‌ها را ذخیره کنیم و حتی عملیات undo را اجرا نماییم.
+
+الگوی فرمان (Command Pattern) یک **راه‌حل شیءگرا** برای **کپسوله‌سازی درخواست‌ها** در قالب اشیاء مستقل ارائه می‌دهد. در این مقاله، این الگو را با جزئیات بررسی کرده و آن را در **یک سیستم کنترل از راه دور** پیاده‌سازی خواهیم کرد.
+
+---
+
+## **چالش طراحی: نیاز به انعطاف‌پذیری در فرمان‌ها**
+
+بیایید سناریوی **یک سیستم اتوماسیون خانگی** را در نظر بگیریم که می‌تواند **چراغ‌ها، تلویزیون، درب پارکینگ و پنکه** را کنترل کند. در طراحی اولیه، متدهای مستقیمی مانند `turnOn()` و `turnOff()` برای هر دستگاه در **ریموت کنترل** تعریف شده‌اند:
+
+```java
+public class RemoteControl {
+    Light light;
+    Fan fan;
+    TV tv;
+
+    public void turnOnLight() {
+        light.on();
+    }
+    public void turnOffLight() {
+        light.off();
+    }
+    // سایر متدهای روشن و خاموش کردن دستگاه‌ها
+}
+```
+
+### **مشکلات این طراحی:**
+
+✅ **وابستگی زیاد:** کلاس `RemoteControl` به جزئیات همه‌ی دستگاه‌ها وابسته است.
+✅ **افزایش پیچیدگی:** اضافه کردن دستگاه جدید نیاز به تغییر مستقیم در کد `RemoteControl` دارد.
+✅ **عدم امکان ذخیره و لغو دستورات (Undo):** پس از اجرای فرمان، بازگرداندن وضعیت قبلی دشوار است.
+
+### **راه‌حل: استفاده از الگوی فرمان**
+
+**الگوی فرمان (Command Pattern)** درخواست‌ها را **به‌عنوان اشیاء مستقل کپسوله می‌کند** تا بتوان آن‌ها را **ذخیره، صف‌بندی و حتی لغو (Undo) کرد.**
+
+---
+
+## **ساختار الگوی فرمان**
+
+### **اجزای اصلی الگو:**
+
+1. **اینترفیس `Command`**
+   - همه‌ی فرمان‌ها را استاندارد کرده و متد `execute()` را تعریف می‌کند.
+2. **فرمان‌های مشخص (Concrete Commands)**
+   - `LightOnCommand`، `LightOffCommand` و غیره که عملیات واقعی را اجرا می‌کنند.
+3. **گیرنده (Receiver)**
+   - کلاس‌هایی که عملیات واقعی را اجرا می‌کنند (مانند `Light` و `Fan`).
+4. **فراخواننده (Invoker)**
+   - شیئی مانند `RemoteControl` که فرمان‌ها را اجرا می‌کند.
+5. **مشتری (Client)**
+   - فرمان‌های مشخص را ایجاد کرده و به دکمه‌های ریموت متصل می‌کند.
+
+### **کلاس اینترفیس `Command`**
+
+```java
+public interface Command {
+    void execute();
+}
+```
+
+### **پیاده‌سازی فرمان‌های مشخص**
+
+#### **فرمان روشن کردن چراغ**
+
+```java
+public class LightOnCommand implements Command {
+    Light light;
+
+    public LightOnCommand(Light light) {
+        this.light = light;
+    }
+    public void execute() {
+        light.on();
+    }
+}
+```
+
+#### **فرمان خاموش کردن چراغ**
+
+```java
+public class LightOffCommand implements Command {
+    Light light;
+
+    public LightOffCommand(Light light) {
+        this.light = light;
+    }
+    public void execute() {
+        light.off();
+    }
+}
+```
+
+### **کلاس گیرنده (Receiver) - چراغ**
+
+```java
+public class Light {
+    public void on() {
+        System.out.println("چراغ روشن شد!");
+    }
+    public void off() {
+        System.out.println("چراغ خاموش شد!");
+    }
+}
+```
+
+### **کلاس فراخواننده (Invoker) - ریموت کنترل**
+
+```java
+public class RemoteControl {
+    Command slot;
+
+    public void setCommand(Command command) {
+        slot = command;
+    }
+    public void pressButton() {
+        slot.execute();
+    }
+}
+```
+
+### **کلاس مشتری (Client)**
+
+```java
+public class RemoteControlTest {
+    public static void main(String[] args) {
+        RemoteControl remote = new RemoteControl();
+        Light light = new Light();
+
+        Command lightOn = new LightOnCommand(light);
+        Command lightOff = new LightOffCommand(light);
+
+        remote.setCommand(lightOn);
+        remote.pressButton();
+
+        remote.setCommand(lightOff);
+        remote.pressButton();
+    }
+}
+```
+
+📌 **خروجی اجرای برنامه:**
+
+```
+چراغ روشن شد!
+چراغ خاموش شد!
+```
+
+✅ **حالا می‌توانیم دکمه‌های ریموت را بدون تغییر در کلاس `RemoteControl`** به دستورات مختلف اختصاص دهیم.
+
+---
+
+## **افزودن قابلیت Undo به الگوی فرمان**
+
+گاهی کاربران ممکن است اشتباهی یک دکمه را بزنند. **با پیاده‌سازی undo، می‌توانیم آخرین فرمان را معکوس کنیم.**
+
+### **افزودن متد `undo()` به اینترفیس `Command`**
+
+```java
+public interface Command {
+    void execute();
+    void undo();
+}
+```
+
+### **پیاده‌سازی Undo در فرمان‌های مشخص**
+
+```java
+public class LightOnCommand implements Command {
+    Light light;
+
+    public LightOnCommand(Light light) {
+        this.light = light;
+    }
+    public void execute() {
+        light.on();
+    }
+    public void undo() {
+        light.off();
+    }
+}
+```
+
+```java
+public class LightOffCommand implements Command {
+    Light light;
+
+    public LightOffCommand(Light light) {
+        this.light = light;
+    }
+    public void execute() {
+        light.off();
+    }
+    public void undo() {
+        light.on();
+    }
+}
+```
+
+### **افزودن Undo به ریموت کنترل**
+
+```java
+public class RemoteControl {
+    Command slot;
+    Command lastCommand;
+
+    public void setCommand(Command command) {
+        slot = command;
+    }
+
+    public void pressButton() {
+        slot.execute();
+        lastCommand = slot;
+    }
+
+    public void pressUndo() {
+        lastCommand.undo();
+    }
+}
+```
+
+✅ **حالا با زدن `pressUndo()`، دستور قبلی برعکس می‌شود!**
+
+---
+
+## **نتیجه‌گیری**
+
+- **الگوی فرمان (Command Pattern) درخواست‌ها را به‌عنوان اشیاء مستقل کپسوله می‌کند.**
+- این الگو **وابستگی‌ها را کاهش داده و امکان Undo، ذخیره‌ی درخواست‌ها و اجرای ماکروها را فراهم می‌کند.**
+- **کاربردهای دنیای واقعی:**
+  - سیستم‌های **کنترل از راه دور**
+  - **صف درخواست‌ها** (Job Queues)
+  - **ذخیره و بازپخش دستورات**
+
+حالا این الگو را در پروژه‌هایت پیاده‌سازی کن! 🚀

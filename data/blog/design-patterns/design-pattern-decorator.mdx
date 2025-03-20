@@ -1,0 +1,220 @@
+---
+title: 'الگوی طراحی Decorator (زینت‌دهنده)'
+date: '2025-03-18 07:00'
+lastmod: '2025-03-18 '
+tags: ['Decorator', 'Design Patterns', 'Java', 'Spring']
+draft: false
+summary: ''
+images: []
+---
+
+## مقدمه
+
+الگوی طراحی **Decorator** یکی از **الگوهای ساختاری** (Structural Patterns) است که امکان **افزودن رفتار جدید به اشیا در زمان اجرا** را فراهم می‌کند، بدون اینکه نیاز باشد کلاس‌های موجود را تغییر دهیم. این الگو جایگزینی انعطاف‌پذیر برای **وراثت** ارائه می‌دهد و از **ترکیب (Composition) به جای وراثت (Inheritance)** استفاده می‌کند.
+
+در این مقاله، الگوی **Decorator** را با جزئیات بررسی خواهیم کرد، نحوه پیاده‌سازی آن را توضیح می‌دهیم و مثال‌هایی از دنیای واقعی ارائه می‌کنیم.
+
+---
+
+## تعریف الگوی Decorator
+
+**الگوی Decorator این امکان را فراهم می‌کند که بدون تغییر کلاس اصلی، قابلیت‌های جدیدی به اشیا اضافه کنیم. این کار از طریق ترکیب اشیا و استفاده از کلاس‌های دکوراتور صورت می‌گیرد.**
+
+### **تعریف رسمی**
+
+> _الگوی Decorator، مسئولیت‌های جدیدی را به یک شیء **به‌صورت دینامیک** اضافه می‌کند. دکوراتورها جایگزینی انعطاف‌پذیر برای وراثت در گسترش عملکرد یک کلاس ارائه می‌دهند._
+
+---
+
+## **چرا از الگوی Decorator استفاده کنیم؟**
+
+### **مشکلات استفاده از وراثت برای گسترش قابلیت‌ها**
+
+گاهی اوقات ممکن است بخواهیم به یک کلاس، قابلیت‌های جدیدی اضافه کنیم. یک روش متداول برای انجام این کار استفاده از **وراثت** است. اما وراثت دارای مشکلاتی است:
+
+- **منجر به انفجار کلاس‌ها (Class Explosion) می‌شود:** به ازای هر ترکیب جدید از قابلیت‌ها، نیاز به تعریف کلاس‌های جدید داریم.
+- **توسعه و نگهداری سخت‌تر می‌شود:** اگر یک ویژگی جدید اضافه شود، باید تمامی کلاس‌های فرزند را تغییر دهیم.
+- **عدم انعطاف‌پذیری در زمان اجرا:** ویژگی‌های جدید فقط در زمان کامپایل قابل اضافه شدن هستند.
+
+**راه‌حل:** استفاده از **الگوی Decorator** که به ما امکان می‌دهد **ویژگی‌ها را به‌صورت دینامیک و در زمان اجرا به اشیا اضافه کنیم.**
+
+---
+
+## **ساختار الگوی Decorator**
+
+الگوی **Decorator** شامل اجزای زیر است:
+
+1. **Component (کامپوننت):** یک اینترفیس یا کلاس انتزاعی که تمام اشیا (اعم از کلاس‌های اصلی و دکوراتورها) از آن پیروی می‌کنند.
+2. **ConcreteComponent (کامپوننت مشخص):** کلاس پایه که ویژگی‌های اصلی شیء را ارائه می‌دهد.
+3. **Decorator (دکوراتور):** یک کلاس انتزاعی که همان اینترفیس **Component** را پیاده‌سازی می‌کند و دارای یک **مرجع** به شیء اصلی است.
+4. **ConcreteDecorator (دکوراتور مشخص):** کلاس‌هایی که ویژگی‌های جدید را به شیء پایه اضافه می‌کنند.
+
+**مثال UML:**
+
+```
+Component (interface)
+│
+├── ConcreteComponent (class)
+│
+├── Decorator (abstract class) → has Component reference
+│
+├── ConcreteDecoratorA (class) → adds behavior A
+│
+└── ConcreteDecoratorB (class) → adds behavior B
+```
+
+---
+
+## **مثال عملی: سیستم سفارش قهوه (Starbuzz Coffee)**
+
+### **۱. تعریف کلاس پایه (کامپوننت)**
+
+```java
+public abstract class Beverage {
+    String description = "Unknown Beverage";
+
+    public String getDescription() {
+        return description;
+    }
+
+    public abstract double cost();
+}
+```
+
+### **۲. تعریف کلاس‌های مشخص (Concrete Components)**
+
+```java
+public class Espresso extends Beverage {
+    public Espresso() {
+        description = "Espresso";
+    }
+
+    public double cost() {
+        return 1.99;
+    }
+}
+```
+
+```java
+public class DarkRoast extends Beverage {
+    public DarkRoast() {
+        description = "Dark Roast Coffee";
+    }
+
+    public double cost() {
+        return 0.99;
+    }
+}
+```
+
+### **۳. تعریف کلاس دکوراتور (Decorator)**
+
+```java
+public abstract class CondimentDecorator extends Beverage {
+    public abstract String getDescription();
+}
+```
+
+### **۴. تعریف دکوراتورهای مشخص (Concrete Decorators)**
+
+```java
+public class Mocha extends CondimentDecorator {
+    Beverage beverage;
+
+    public Mocha(Beverage beverage) {
+        this.beverage = beverage;
+    }
+
+    public String getDescription() {
+        return beverage.getDescription() + ", Mocha";
+    }
+
+    public double cost() {
+        return 0.20 + beverage.cost();
+    }
+}
+```
+
+```java
+public class Whip extends CondimentDecorator {
+    Beverage beverage;
+
+    public Whip(Beverage beverage) {
+        this.beverage = beverage;
+    }
+
+    public String getDescription() {
+        return beverage.getDescription() + ", Whip";
+    }
+
+    public double cost() {
+        return 0.10 + beverage.cost();
+    }
+}
+```
+
+### **۵. استفاده از دکوراتورها در برنامه اصلی**
+
+```java
+public class StarbuzzCoffee {
+    public static void main(String[] args) {
+        Beverage beverage = new DarkRoast();
+        beverage = new Mocha(beverage);
+        beverage = new Whip(beverage);
+
+        System.out.println(beverage.getDescription() + " $" + beverage.cost());
+    }
+}
+```
+
+**خروجی:**
+
+```
+Dark Roast Coffee, Mocha, Whip $1.29
+```
+
+---
+
+## **کاربردهای دنیای واقعی الگوی Decorator**
+
+**۱. ورودی و خروجی در Java (Java I/O Streams):**
+
+```java
+InputStream inputStream = new BufferedInputStream(new FileInputStream("file.txt"));
+```
+
+- `FileInputStream` → خواندن بایت‌های خام
+- `BufferedInputStream` → اضافه کردن قابلیت بافرینگ
+
+**۲. GUI در Java Swing:**
+
+```java
+JTextField textField = new JTextField();
+textField = new BorderDecorator(textField);
+textField = new ScrollDecorator(textField);
+```
+
+- `BorderDecorator` و `ScrollDecorator` ویژگی‌هایی مانند **حاشیه** و **اسکرول بار** را به کامپوننت اضافه می‌کنند.
+
+---
+
+## **مزایا و معایب الگوی Decorator**
+
+✅ **مزایا:**
+
+- افزودن رفتارهای جدید بدون تغییر در کلاس‌های اصلی.
+- جلوگیری از ایجاد کلاس‌های زیاد.
+- پیروی از اصل **Open-Closed Principle**.
+
+❌ **معایب:**
+
+- افزایش پیچیدگی و تعداد اشیا.
+- نیاز به دقت در ترکیب صحیح دکوراتورها.
+
+---
+
+## **نتیجه‌گیری**
+
+الگوی **Decorator** یک روش کارآمد برای افزودن رفتارهای جدید به اشیا به‌صورت **دینامیک** و بدون تغییر در کدهای اصلی است. این الگو در **سیستم‌های GUI، فریمورک‌های ورودی/خروجی و بسیاری از معماری‌های مدرن** مورد استفاده قرار می‌گیرد.
+
+با درک این الگو، می‌توانید طراحی‌های **مقیاس‌پذیرتر، انعطاف‌پذیرتر و نگه‌داشت‌پذیرتری** ایجاد کنید.

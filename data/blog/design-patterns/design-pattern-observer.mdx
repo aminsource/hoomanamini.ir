@@ -1,0 +1,187 @@
+---
+title: 'الگوی طراحی Observer در جاوا'
+date: '2025-03-18 06:00'
+lastmod: '2025-03-18'
+tags: ['Java', 'Design Patterns', 'Observer Pattern']
+draft: false
+summary: ''
+images: []
+---
+
+###
+
+#### مقدمه
+
+در توسعه نرم‌افزار، همواره با نیاز به ارتباط و هماهنگی بین بخش‌های مختلف سیستم مواجه هستیم. یکی از رایج‌ترین روش‌ها برای مدیریت این تعاملات استفاده از الگوی طراحی Observer است. این الگو با ایجاد یک ارتباط **یک‌-به-چند** بین اشیاء، امکان اطلاع‌رسانی خودکار تغییرات را به وابسته‌ها فراهم می‌کند. در این مقاله، الگوی Observer را با جزئیات کامل معرفی کرده و یک مثال کاربردی از آن ارائه می‌دهیم.
+
+---
+
+#### تعریف الگوی Observer
+
+الگوی Observer یک رابطه یک‌-به-چند بین اشیاء تعریف می‌کند، به طوری که هر زمان وضعیت یک شیء (Subject) تغییر کند، تمام وابسته‌های آن (Observers) به‌طور خودکار مطلع شده و به‌روزرسانی می‌شوند. این الگو به‌ویژه زمانی مفید است که تغییرات در داده‌ها باید به‌صورت دینامیک به چندین بخش دیگر منتقل شود.
+
+**ویژگی‌های کلیدی:**
+
+1. **Loose Coupling (ارتباط ضعیف):** وابستگی بین Subject و Observers به حداقل ممکن کاهش می‌یابد.
+2. **ارتباط دینامیک:** اضافه یا حذف Observers در هر زمان امکان‌پذیر است.
+3. **انعطاف‌پذیری در تغییرات:** امکان توسعه و تغییر در Observerها بدون نیاز به تغییر در Subject فراهم است.
+
+---
+
+#### ساختار الگوی Observer
+
+ساختار الگو شامل سه بخش اصلی است:
+
+1. **Subject (موضوع):**
+
+   - رابطی برای مدیریت Observers با متدهای زیر:
+     - `registerObserver(Observer o)` برای ثبت Observers.
+     - `removeObserver(Observer o)` برای حذف Observers.
+     - `notifyObservers()` برای اطلاع‌رسانی به Observers.
+
+2. **Observer (ناظر):**
+
+   - رابطی که شامل متدی به نام `update()` است. تمام Observers باید این رابط را پیاده‌سازی کنند.
+
+3. **ConcreteSubject (موضوع واقعی):**
+
+   - پیاده‌سازی Subject و مدیریت وضعیت داخلی.
+
+4. **ConcreteObserver (ناظر واقعی):**
+   - پیاده‌سازی Observer و تعریف رفتار خاص هنگام دریافت اطلاع‌رسانی.
+
+---
+
+#### مثال عملی: سیستم پایش آب‌وهوا
+
+برای توضیح بهتر، سیستمی را طراحی می‌کنیم که وضعیت آب‌وهوا (دما، رطوبت و فشار) را پایش کرده و به سه نمایشگر (شرایط فعلی، آمار، و پیش‌بینی) اطلاع‌رسانی می‌کند.
+
+##### مرحله ۱: تعریف رابط‌ها
+
+```java
+public interface Subject {
+    void registerObserver(Observer o);
+    void removeObserver(Observer o);
+    void notifyObservers();
+}
+
+public interface Observer {
+    void update(float temp, float humidity, float pressure);
+}
+
+public interface DisplayElement {
+    void display();
+}
+```
+
+##### مرحله ۲: پیاده‌سازی Subject
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class WeatherData implements Subject {
+    private List<Observer> observers;
+    private float temperature;
+    private float humidity;
+    private float pressure;
+
+    public WeatherData() {
+        observers = new ArrayList<>();
+    }
+
+    @Override
+    public void registerObserver(Observer o) {
+        observers.add(o);
+    }
+
+    @Override
+    public void removeObserver(Observer o) {
+        observers.remove(o);
+    }
+
+    @Override
+    public void notifyObservers() {
+        for (Observer observer : observers) {
+            observer.update(temperature, humidity, pressure);
+        }
+    }
+
+    public void setMeasurements(float temperature, float humidity, float pressure) {
+        this.temperature = temperature;
+        this.humidity = humidity;
+        this.pressure = pressure;
+        notifyObservers();
+    }
+}
+```
+
+##### مرحله ۳: پیاده‌سازی Observers
+
+نمایشگر "شرایط فعلی" را پیاده‌سازی می‌کنیم:
+
+```java
+public class CurrentConditionsDisplay implements Observer, DisplayElement {
+    private float temperature;
+    private float humidity;
+    private Subject weatherData;
+
+    public CurrentConditionsDisplay(Subject weatherData) {
+        this.weatherData = weatherData;
+        weatherData.registerObserver(this);
+    }
+
+    @Override
+    public void update(float temperature, float humidity, float pressure) {
+        this.temperature = temperature;
+        this.humidity = humidity;
+        display();
+    }
+
+    @Override
+    public void display() {
+        System.out.println("Current conditions: " + temperature + "F degrees and " + humidity + "% humidity");
+    }
+}
+```
+
+##### مرحله ۴: اجرای برنامه
+
+```java
+public class WeatherStation {
+    public static void main(String[] args) {
+        WeatherData weatherData = new WeatherData();
+
+        CurrentConditionsDisplay currentDisplay = new CurrentConditionsDisplay(weatherData);
+
+        weatherData.setMeasurements(80, 65, 30.4f);
+        weatherData.setMeasurements(82, 70, 29.2f);
+        weatherData.setMeasurements(78, 90, 29.2f);
+    }
+}
+```
+
+**خروجی:**
+
+```
+Current conditions: 80.0F degrees and 65.0% humidity
+Current conditions: 82.0F degrees and 70.0% humidity
+Current conditions: 78.0F degrees and 90.0% humidity
+```
+
+---
+
+#### بهبود و تغییرات
+
+1. **Push vs Pull:**
+
+   - در طراحی فعلی، داده‌ها به Observers ارسال می‌شوند (Push). اما می‌توانیم Observers را طوری طراحی کنیم که داده‌های موردنیاز را از Subject دریافت کنند (Pull).
+
+2. **توسعه نمایشگرها:**
+   - نمایشگرهای دیگر مانند "Heat Index" را می‌توانیم با استفاده از همین الگو اضافه کنیم.
+
+---
+
+#### نتیجه‌گیری
+
+الگوی Observer راهکاری قدرتمند برای مدیریت تغییرات و ارتباط بین اشیاء در سیستم‌های نرم‌افزاری ارائه می‌دهد. این الگو با کاهش وابستگی‌ها و افزایش انعطاف‌پذیری، توسعه و نگهداری کد را ساده می‌کند. با استفاده از این الگو، می‌توانید سیستم‌هایی قابل توسعه و پایدار بسازید که در برابر تغییرات مقاوم هستند.

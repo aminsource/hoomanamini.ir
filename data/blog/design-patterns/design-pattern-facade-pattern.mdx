@@ -1,0 +1,196 @@
+---
+title: 'الگوی Facade (فاساد)'
+date: '2025-03-15 05:00'
+lastmod: '2025-03-15 '
+tags: ['Facade Pattern', 'Design Patterns', 'Java', 'Spring']
+draft: false
+summary: ''
+images: []
+---
+
+### مقدمه
+
+الگوی طراحی **Facade** یکی از الگوهای **ساختاری (Structural Patterns)** است که **یک رابط ساده‌شده (Facade) برای سیستم‌های پیچیده** ایجاد می‌کند. این الگو تعامل با سیستم را ساده‌تر کرده و وابستگی‌های میان کلاس‌ها را کاهش می‌دهد.
+
+**هدف این الگو:**
+
+- ارائه‌ی یک **رابط یکنواخت و ساده** برای مدیریت سیستم‌های پیچیده.
+- **پنهان کردن جزئیات داخلی** از کلاینت‌ها و ارائه‌ی یک API ساده.
+- **کاهش وابستگی‌ها و افزایش خوانایی کد.**
+
+---
+
+## **چرا به الگوی Facade نیاز داریم؟**
+
+### **مشکل: پیچیدگی بیش از حد در سیستم‌های بزرگ**
+
+تصور کنید که می‌خواهید یک **سیستم سینمای خانگی** را توسعه دهید که شامل اجزای زیر است:
+
+- 🎬 **DVD Player**
+- 📽 **Projector**
+- 🔊 **Surround Sound System**
+- 💡 **Lighting System**
+
+برای راه‌اندازی سینمای خانگی، کاربر باید **به‌صورت دستی هر دستگاه را تنظیم کند**، که این کار پیچیده و دشوار است.
+
+### **راه‌حل: استفاده از یک Facade**
+
+می‌توان یک **کلاس Facade** ایجاد کرد که تمام این تنظیمات را مدیریت کند، و کاربر فقط یک متد **`watchMovie()`** را صدا بزند.
+
+```java
+class HomeTheaterFacade {
+    private DVDPlayer dvd;
+    private Projector projector;
+    private SoundSystem soundSystem;
+    private Lights lights;
+
+    public HomeTheaterFacade(DVDPlayer dvd, Projector projector, SoundSystem soundSystem, Lights lights) {
+        this.dvd = dvd;
+        this.projector = projector;
+        this.soundSystem = soundSystem;
+        this.lights = lights;
+    }
+
+    public void watchMovie(String movie) {
+        lights.dim();
+        projector.on();
+        soundSystem.setVolume(5);
+        dvd.play(movie);
+        System.out.println("Enjoy the movie!");
+    }
+}
+```
+
+اکنون، به‌جای فراخوانی مستقیم کلاس‌های مختلف، کلاینت فقط از **Facade** استفاده می‌کند:
+
+```java
+HomeTheaterFacade homeTheater = new HomeTheaterFacade(new DVDPlayer(), new Projector(), new SoundSystem(), new Lights());
+homeTheater.watchMovie("Inception");
+```
+
+✅ **نتیجه:**
+
+- سادگی و خوانایی کد افزایش یافته است.
+- کاربر نیازی به دانستن جزئیات داخلی سیستم ندارد.
+- کلاس‌های داخلی به‌صورت مستقل باقی می‌مانند و تغییرات آن‌ها تأثیری روی کلاینت ندارد.
+
+---
+
+## **مثال عملی از Facade در جاوا: مدیریت معدن طلا**
+
+در این مثال، ما سه کارگر معدن داریم:
+
+```java
+public class DwarvenGoldDigger {
+    public void digGold() { System.out.println("Dwarf digs for gold"); }
+}
+public class DwarvenTunnelDigger {
+    public void digTunnel() { System.out.println("Dwarf creates tunnel"); }
+}
+public class DwarvenCartOperator {
+    public void transportGold() { System.out.println("Dwarf transports gold"); }
+}
+```
+
+### **بدون Facade**
+
+```java
+DwarvenGoldDigger digger = new DwarvenGoldDigger();
+DwarvenTunnelDigger tunnelDigger = new DwarvenTunnelDigger();
+DwarvenCartOperator cartOperator = new DwarvenCartOperator();
+
+digger.digGold();
+tunnelDigger.digTunnel();
+cartOperator.transportGold();
+```
+
+🔴 **مشکلات این روش:**
+
+- وابستگی زیاد به کلاس‌های داخلی.
+- مدیریت سخت فرآیندها.
+
+### **✅ استفاده از Facade**
+
+```java
+public class DwarvenGoldMineFacade {
+    private final DwarvenGoldDigger digger;
+    private final DwarvenTunnelDigger tunnelDigger;
+    private final DwarvenCartOperator cartOperator;
+
+    public DwarvenGoldMineFacade() {
+        digger = new DwarvenGoldDigger();
+        tunnelDigger = new DwarvenTunnelDigger();
+        cartOperator = new DwarvenCartOperator();
+    }
+
+    public void manageMining() {
+        digger.digGold();
+        tunnelDigger.digTunnel();
+        cartOperator.transportGold();
+    }
+}
+```
+
+### **اکنون کلاینت فقط Facade را صدا می‌زند:**
+
+```java
+DwarvenGoldMineFacade mine = new DwarvenGoldMineFacade();
+mine.manageMining();
+```
+
+✅ **نتیجه:**
+
+- مدیریت ساده‌تر و خوانایی بالاتر.
+- حذف وابستگی مستقیم کلاینت به کلاس‌های داخلی.
+
+---
+
+## **کاربردهای Facade Pattern در Spring و Java**
+
+### **۱. استفاده در Spring – مثال `RestTemplate`**
+
+در Spring Boot، کلاس `RestTemplate` یک **Facade** برای ارسال درخواست‌های HTTP است، به جای استفاده از `HttpURLConnection`:
+
+```java
+RestTemplate restTemplate = new RestTemplate();
+String response = restTemplate.getForObject("https://api.example.com/data", String.class);
+```
+
+✅ این الگو باعث می‌شود که نیازی به مدیریت درخواست‌های پیچیده HTTP نداشته باشیم.
+
+### **۲. استفاده در Hibernate – مدیریت دیتابیس**
+
+`SessionFactory` در Hibernate یک **Facade** برای مدیریت `Session` و `Transaction` است:
+
+```java
+SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
+Session session = sessionFactory.openSession();
+```
+
+✅ **Facade پیچیدگی تعامل با دیتابیس را کاهش می‌دهد.**
+
+---
+
+## **مزایا و معایب الگوی Facade**
+
+| **مزایا**                                       | **معایب**                                                                    |
+| ----------------------------------------------- | ---------------------------------------------------------------------------- |
+| کاهش پیچیدگی تعامل با کلاس‌های داخلی            | اگر اشتباه طراحی شود، می‌تواند منجر به یک **نقطه ضعف در معماری** شود         |
+| افزایش خوانایی و نگهداری کد                     | اگر Facade خیلی بزرگ شود، ممکن است به **یک کلاس پر از منطق تجاری** تبدیل شود |
+| کاهش وابستگی مستقیم کلاینت‌ها به کلاس‌های داخلی | در برخی موارد، ممکن است ارتباط مستقیم با کلاس‌های داخلی را محدود کند         |
+
+---
+
+## **جمع‌بندی: چه زمانی از Facade Pattern استفاده کنیم؟**
+
+✅ وقتی که **یک سیستم پیچیده** داریم و می‌خواهیم **یک رابط ساده برای آن ارائه دهیم.**  
+✅ وقتی که نیاز داریم **وابستگی میان اجزای سیستم را کاهش دهیم.**  
+✅ وقتی که می‌خواهیم **تعاملات بین کلاس‌ها را بهتر مدیریت کنیم.**
+
+### 🎯 **نتیجه‌گیری:**
+
+- الگوی **Facade** **تعامل با سیستم‌های پیچیده را ساده می‌کند.**
+- **در فریمورک‌های معروفی مثل Spring و Hibernate به‌شدت استفاده شده است.**
+- **استفاده از آن باعث بهبود خوانایی، نگهداری و انعطاف‌پذیری کد خواهد شد.**
+
+✔ **این الگو، یک ابزار عالی برای نوشتن کدهای خواناتر، ساده‌تر و قابل نگهداری‌تر است!** 🚀

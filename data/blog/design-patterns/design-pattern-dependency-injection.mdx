@@ -1,0 +1,138 @@
+---
+title: 'الگوی Dependency Injection (تزریق وابستگی)'
+date: '2025-03-14 05:00'
+lastmod: '2025-03-14 '
+tags: ['Dependency Injection', 'Design Patterns', 'Java', 'Spring']
+draft: false
+summary: ''
+images: []
+---
+
+### مقدمه
+
+«Dependency Injection» یا «تزریق وابستگی» یکی از مهم‌ترین الگوهای طراحی در برنامه‌نویسی شیءگرا و به‌ویژه در توسعه برنامه‌های مدرن است. این الگو به‌منظور مدیریت بهتر وابستگی‌های بین کلاس‌ها استفاده می‌شود و باعث می‌شود کلاس‌ها مستقیماً به هم وابسته نباشند. در این مقاله به‌صورت گام‌به‌گام، واضح و کاربردی این الگو را بررسی خواهیم کرد.
+
+## وابستگی چیست؟
+
+وابستگی (Dependency) زمانی به وجود می‌آید که یک کلاس برای انجام وظایف خود به کلاس دیگری نیاز داشته باشد. مثلاً فرض کنید کلاسی به نام `Car` داریم که برای روشن شدن به کلاس `Engine` نیاز دارد:
+
+```java
+class Car {
+    private Engine engine;
+
+    Car() {
+        engine = new Engine(); // وابستگی مستقیم
+    }
+
+    void start() {
+        engine.run();
+    }
+}
+```
+
+در این کد، کلاس `Car` مستقیماً یک نمونه از کلاس `Engine` می‌سازد. این روش چند مشکل اساسی دارد:
+
+- کلاس `Car` شدیداً به کلاس `Engine` وابسته شده است.
+- اگر کلاس `Engine` تغییر کند، ممکن است کلاس `Car` هم تغییر کند.
+- تست کردن کلاس `Car` دشوارتر می‌شود.
+
+### حل مشکل با Dependency Injection
+
+برای رفع این مشکل از **Dependency Injection** استفاده می‌کنیم. در این روش، کلاس وابسته (`Engine`) از بیرون به کلاس تزریق می‌شود:
+
+```java
+class Car {
+    private Engine engine;
+
+    Car(Engine engine) { // تزریق وابستگی از طریق سازنده
+        this.engine = engine;
+    }
+
+    void start() {
+        engine.run();
+    }
+}
+```
+
+اکنون کلاس `Car` دیگر مسئول ساختن شیء `Engine` نیست و از بیرون این وابستگی را دریافت می‌کند.
+
+### روش‌های مختلف تزریق وابستگی
+
+سه روش اصلی برای تزریق وابستگی‌ها وجود دارد:
+
+1. **تزریق از طریق سازنده (Constructor Injection)**
+
+```java
+class Car {
+    private Engine engine;
+
+    Car(Engine engine) {
+        this.engine = engine;
+    }
+}
+```
+
+2. **تزریق از طریق متد setter (Setter Injection)**
+
+```java
+class Car {
+    private Engine engine;
+
+    void setEngine(Engine engine) {
+        this.engine = engine;
+    }
+}
+```
+
+3. **تزریق از طریق فیلد (Field Injection)**
+
+```java
+class Car {
+    @Autowired
+    private Engine engine;
+}
+```
+
+روش توصیه‌شده و پرکاربردترین روش، استفاده از تزریق از طریق سازنده (Constructor Injection) است.
+
+### Inversion of Control (وارونگی کنترل)
+
+مفهوم «Inversion of Control» یا وارونگی کنترل به این معنا است که کنترل ساخت اشیاء و مدیریت وابستگی‌ها به جای اینکه به صورت مستقیم توسط کلاس‌ها انجام شود، به یک فریمورک یا یک کانتینر بیرونی سپرده می‌شود. این اصل پایه‌ای برای پیاده‌سازی Dependency Injection است.
+
+در Spring، کنترل ساخت و مدیریت اشیاء (Beans) به‌طور کامل به عهده فریمورک است و برنامه‌نویس فقط نیازمندی‌های خود را مشخص می‌کند.
+
+### مدیریت Dependency Injection توسط Spring
+
+Spring از طریق یک کانتینر IoC (Inversion of Control Container) تزریق وابستگی‌ها را مدیریت می‌کند. کانتینر Spring مسئولیت ساخت، پیکربندی و تزریق شیءها را دارد.
+
+#### مثال کاربردی در Spring:
+
+```java
+@Service
+class Engine {
+    void run() {
+        System.out.println("Engine started");
+    }
+}
+
+@RestController
+class CarController {
+    private final Engine engine;
+
+    CarController(Engine engine) { // تزریق خودکار توسط Spring
+        this.engine = engine;
+    }
+
+    @GetMapping("/start")
+    String startCar() {
+        engine.run();
+        return "Car started!";
+    }
+}
+```
+
+در این مثال، Spring به‌طور خودکار نمونه‌ای از کلاس `Engine` ایجاد و آن را به کلاس `CarController` تزریق می‌کند. این فرایند به طور کامل توسط کانتینر Spring مدیریت می‌شود.
+
+## جمع‌بندی
+
+الگوی Dependency Injection و مفهوم Inversion of Control، اصول کلیدی در توسعه برنامه‌های مدرن هستند. این مفاهیم باعث ایجاد کدی تمیز، منعطف، تست‌پذیر و قابل نگهداری می‌شوند. استفاده از فریمورک‌هایی مانند Spring، این فرایند را به‌شدت آسان و مؤثر می‌کند و توسعه‌دهندگان را قادر می‌سازد تا روی منطق اصلی برنامه تمرکز کنند.
