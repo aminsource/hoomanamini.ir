@@ -1,0 +1,167 @@
+---
+title: 'استفاده از متدهای استاتیک سازنده به جای سازنده‌ها (constructors)'
+date: '2025-03-21 10:00'
+lastmod: '2025-03-21'
+tags:
+  [
+    'Static Factory Method',
+    'Design Patterns',
+    'Factory Pattern',
+    'Singleton',
+    'Object Creation',
+    'Java',
+    'Effective Java',
+    'کدنویسی پیشرفته',
+    'بهترین روش‌های طراحی',
+    'برنامه‌نویسی شی‌گرا',
+    'الگوهای طراحی',
+    'جاوا',
+  ]
+
+draft: false
+summary: ''
+images: []
+---
+
+در زمان ایجاد اشیاء در جاوا، استفاده از سازنده‌ها (Constructors) روش سنتی و پیش‌فرض است. با این حال، **Static Factory Methods** در بسیاری از موارد جایگزین منعطف‌تر و قدرتمندتری هستند. این مقاله به بررسی دلایل و زمان استفاده از Static Factory Methods به جای سازنده‌ها می‌پردازد و مزایا، معایب و بهترین روش‌های استفاده را توضیح می‌دهد.
+
+---
+
+## Static Factory Methods چیستند؟
+
+Static Factory Methods به متدهایی گفته می‌شود که وظیفه ایجاد و بازگرداندن یک نمونه از کلاس را بر عهده دارند. برخلاف سازنده‌ها که همیشه با استفاده از کلمه کلیدی `new` یک شیء جدید می‌سازند، این متدها انعطاف بیشتری در نحوه ایجاد اشیاء و مدیریت آن‌ها دارند.
+
+### چگونه Static Factory Methods ایجاد کنیم؟
+
+برای ایجاد یک Static Factory Method، متد مورد نظر را به صورت `static` تعریف کرده و نمونه‌ای از کلاس را از داخل آن برگردانید.
+
+#### مثال ساده:
+
+```java
+public class MyClass {
+    private int value;
+
+    private MyClass(int value) {
+        this.value = value;
+    }
+
+    public static MyClass createInstance(int value) {
+        return new MyClass(value);
+    }
+
+    public int getValue() {
+        return value;
+    }
+}
+
+MyClass obj = MyClass.createInstance(10);
+System.out.println(obj.getValue()); // خروجی: 10
+```
+
+یا در مثال کلاس `BigInteger`:
+
+```java
+// استفاده از سازنده
+BigInteger number1 = new BigInteger(100, new Random());
+
+// استفاده از متد کارخانه‌ای استاتیک
+BigInteger number2 = BigInteger.probablePrime(100, new Random());
+```
+
+---
+
+## مزایای Static Factory Methods
+
+### 1. نام‌گذاری توصیفی
+
+Static Factory Methods می‌توانند نام‌هایی داشته باشند که عملکرد دقیق‌تر متد را توصیف کنند، در نتیجه کد خواناتر می‌شود.
+
+### 2. استفاده مجدد از نمونه‌ها (Caching)
+
+این متدها می‌توانند از اشیاء از پیش ساخته‌شده استفاده کنند و نیازی به ایجاد مجدد آن‌ها نباشد:
+
+```java
+Boolean b1 = Boolean.valueOf(true);
+Boolean b2 = Boolean.valueOf(true);
+System.out.println(b1 == b2); // true
+```
+
+### 3. بازگرداندن زیرکلاس‌ها
+
+متد می‌تواند بسته به شرایط زیرکلاسی از نوع بازگشتی را برگرداند:
+
+```java
+EnumSet<Day> days = EnumSet.of(Day.MONDAY, Day.FRIDAY);
+```
+
+### 4. تأخیر در ایجاد شیء (Lazy Initialization)
+
+مثال بارز آن الگوی Singleton است:
+
+```java
+public class Singleton {
+    private static Singleton instance;
+    private Singleton() {}
+    public static Singleton getInstance() {
+        if (instance == null) {
+            instance = new Singleton();
+        }
+        return instance;
+    }
+}
+```
+
+### 5. محدود کردن ایجاد اشیاء
+
+امکان کنترل تعداد اشیاء ایجادشده مانند Singleton یا حتی محدودسازی بیشتر.
+
+### 6. پنهان‌سازی پیاده‌سازی و تطبیق نسخه‌ها
+
+کلاس‌هایی مثل `EnumSet` بسته به اندازه enum ممکن است پیاده‌سازی متفاوتی را بازگردانند. همچنین مانند معماری‌های مبتنی بر تأمین‌کننده سرویس، کلاس‌های پیاده‌ساز می‌توانند حتی هنگام نوشتن کلاس اصلی وجود نداشته باشند:
+
+```java
+Connection conn = DriverManager.getConnection(...);
+```
+
+---
+
+## معایب Static Factory Methods
+
+### 1. عدم قابلیت ارث‌بری
+
+اگر constructor کلاس `private` باشد، دیگر نمی‌توان از آن ارث‌بری کرد. این موضوع می‌تواند توسعه‌پذیری را محدود کند.
+
+### 2. دشواری در کشف
+
+برخلاف constructorها که در Javadoc برجسته هستند، متدهای static factory ممکن است پنهان بمانند.
+
+---
+
+## نام‌گذاری‌های رایج برای Static Factory Methods
+
+- `from`: تبدیل نوع → `Date.from(instant)`
+- `of`: تجمیع چند مقدار → `EnumSet.of(...)`
+- `valueOf`: مشابه `of` ولی رسمی‌تر → `BigInteger.valueOf(...)`
+- `getInstance` / `instance`: بازگرداندن نمونه موجود → `StackWalker.getInstance(...)`
+- `create` / `newInstance`: ایجاد نمونه جدید → `Array.newInstance(...)`
+- `getType` / `newType`: وقتی متد در کلاس دیگری باشد → `Files.newBufferedReader(...)`
+- `type`: نسخه ساده‌تر متد بالا → `Collections.list(...)`
+
+---
+
+## بهترین روش‌ها
+
+- از نام‌گذاری‌های استاندارد استفاده کنید.
+- متدها را در مستندات به وضوح شرح دهید.
+- در طراحی Singleton، caching، immutability و factory-based APIs از آن‌ها بهره ببرید.
+
+---
+
+## نتیجه‌گیری
+
+Static Factory Methods جایگزینی خوانا، منعطف و قدرتمند برای سازنده‌ها هستند. آن‌ها با کاهش وابستگی، بهبود عملکرد و ایجاد APIهای شفاف‌تر، به توسعه‌دهنده‌ها کمک می‌کنند تا طراحی بهتری داشته باشند. در حالی که سازنده‌ها نیز کاربرد خود را دارند، پیشنهاد می‌شود قبل از استفاده از `public constructor` حتماً بررسی شود که آیا یک متد static factory می‌تواند انتخاب بهتری باشد یا خیر.
+
+---
+
+**منبع:**
+Joshua Bloch, _Effective Java_, 3rd Edition, Addison-Wesley, 2018.
