@@ -1,0 +1,341 @@
+---
+title: ' راهنمای جامع پیاده‌سازی RAG با Spring AI - از پایه تا پیشرفته'
+date: '2025-06-28 14:00'
+lastmod: '2025-06-28'
+tags: []
+draft: false
+summary: ''
+images: []
+---
+
+## مقدمه
+
+RAG یا Retrieval-Augmented Generation یک الگوی محبوب در توسعه سیستم‌های هوشمند مانند چت‌بات‌ها و موتورهای پرسش‌وپاسخ است که ترکیبی از مدل‌های زبانی و موتورهای جستجو را به کار می‌گیرد. فریم‌ورک Spring AI این امکان را فراهم می‌کند تا پیاده‌سازی RAG را در پروژه‌های جاوا با حداقل پیچیدگی انجام دهیم.
+
+---
+
+## 1. Basic RAG: پیاده‌سازی پایه‌ای
+
+در این حالت ساده، سیستم RAG تنها از یک مرحله بازیابی اسناد (retrieval) از طریق بردارهای مشابه استفاده می‌کند و مستقیماً همان اسناد را به مدل زبان ارسال می‌کند. هیچ‌گونه حافظه مکالمه (ChatMemory)، بازنویسی یا پردازش اضافی روی پرسش انجام نمی‌شود.
+
+🚫 محدودیت‌ها:
+
+- عدم پشتیبانی از context یا سوابق گفت‌وگو (multi-turn chat)
+- عدم امکان پاسخ‌گویی هوشمند در صورت نبود سند مشابه
+- مناسب فقط برای درخواست‌های مستقیم و مستقل
+
+```java
+@RestController
+class RagControllerBasic {
+    private final ChatClient chatClient;
+    private final RetrievalAugmentationAdvisor advisor;
+
+    RagControllerBasic(ChatClient.Builder builder, VectorStore vectorStore) {
+        this.chatClient = builder.build();
+        this.advisor = RetrievalAugmentationAdvisor.builder()
+            .documentRetriever(VectorStoreDocumentRetriever.builder()
+                .vectorStore(vectorStore)
+                .similarityThreshold(0.5)
+                .build())
+            .build();
+    }
+
+    @PostMapping("/rag/basic")
+    String chat(@RequestBody String question) {
+        return chatClient.prompt()
+            .advisors(advisor)
+            .user(question)
+            .call()
+            .content();
+    }
+}
+```
+
+### 🧪 مثال
+
+فرض کنید vector store حاوی سندی با این محتواست:
+
+> "شرایط عضویت شامل پرداخت حق اشتراک ماهانه است."
+
+و درخواست کاربر:
+
+```json
+POST /rag/basic
+Body: "حق عضویت ماهیانه چقدر است؟"
+```
+
+مدل با توجه به بازیابی سند بالا ممکن است پاسخ دهد:
+
+> "برای عضویت، باید حق اشتراک ماهانه پرداخت شود."
+
+📌 مناسب برای: پیاده‌سازی اولیه بدون حافظه یا پردازش اضافی
+
+```java
+@RestController
+class RagControllerBasic {
+    private final ChatClient chatClient;
+    private final RetrievalAugmentationAdvisor advisor;
+
+    RagControllerBasic(ChatClient.Builder builder, VectorStore vectorStore) {
+        this.chatClient = builder.build();
+        this.advisor = RetrievalAugmentationAdvisor.builder()
+            .documentRetriever(VectorStoreDocumentRetriever.builder()
+                .vectorStore(vectorStore)
+                .similarityThreshold(0.5)
+                .build())
+            .build();
+    }
+
+    @PostMapping("/rag/basic")
+    String chat(@RequestBody String question) {
+        return chatClient.prompt()
+            .advisors(advisor)
+            .user(question)
+            .call()
+            .content();
+    }
+}
+```
+
+📌 مناسب برای: پیاده‌سازی اولیه بدون حافظه یا پردازش اضافی
+
+---
+
+## 2. RAG با Empty Context
+
+```java
+var queryAugmenter = ContextualQueryAugmenter.builder()
+    .allowEmptyContext(true)
+    .build();
+```
+
+🔍 اگر سند مرتبط پیدا نشد، باز هم پاسخ تولید می‌شود. این قابلیت باعث می‌شود که سیستم حتی در نبود context بازیابی شده، بتواند یک پاسخ مفید یا عمومی تولید کند.
+
+📌 مناسب برای: زمانی که VectorStore ممکن است خالی باشد یا بازیابی ناموفق باشد.
+
+### 🧪 مثال کامل
+
+فرض کنید vector store شما خالی است یا هیچ سندی با سوال زیر شباهت کافی ندارد:
+
+```json
+POST /rag/empty-context
+Body: "مراحل ثبت‌نام چگونه است؟"
+```
+
+در حالت معمول (بدون allowEmptyContext)، چون سندی بازیابی نمی‌شود، مدل ممکن است پاسخ ندهد یا با خطا مواجه شود.
+
+اما در این حالت، حتی بدون سند، مدل ممکن است چنین پاسخی تولید کند:
+
+> "برای ثبت‌نام، معمولاً باید فرم مربوطه را تکمیل کرده و اطلاعات شخصی خود را وارد نمایید."
+
+✅ این امکان مفید است به‌ویژه در مراحل اولیه توسعه، یا زمانی که vector store هنوز کامل نشده است.
+
+```java
+var queryAugmenter = ContextualQueryAugmenter.builder()
+    .allowEmptyContext(true)
+    .build();
+```
+
+🔍 اگر سند مرتبط پیدا نشد، باز هم پاسخ تولید می‌شود.
+
+📌 مناسب برای: زمانی که VectorStore ممکن است خالی باشد یا بازیابی ناموفق باشد.
+
+---
+
+## 3. RAG با ChatMemory
+
+در این حالت، سیستم می‌تواند سابقه مکالمه را ذخیره و در پاسخ‌های بعدی لحاظ کند. از `ChatMemory` برای نگهداری اطلاعات گفتگوها بر اساس `conversationId` استفاده می‌شود. این قابلیت به شما امکان می‌دهد مکالمات چندمرحله‌ای و محاوره‌ای را به‌صورت context-aware مدیریت کنید.
+
+```java
+@RestController
+class RagControllerMemory {
+    RagControllerMemory(ChatClient.Builder builder, ChatMemory memory, VectorStore store) {
+        var memoryAdvisor = MessageChatMemoryAdvisor.builder(memory).build();
+        var retriever = VectorStoreDocumentRetriever.builder()
+            .vectorStore(store).similarityThreshold(0.5).build();
+        this.advisor = RetrievalAugmentationAdvisor.builder().documentRetriever(retriever).build();
+        this.chatClient = builder.build();
+    }
+
+    @PostMapping("/rag/memory/{conversationId}")
+    String chat(@RequestBody String q, @PathVariable String conversationId) {
+        return chatClient.prompt()
+            .advisors(memoryAdvisor, advisor)
+            .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+            .user(q).call().content();
+    }
+}
+```
+
+📌 مناسب برای: چت‌های چندمرحله‌ای با سابقه مکالمه
+
+### 🧪 مثال سناریو
+
+**مرحله اول:**
+
+```json
+POST /rag/memory/abc123
+Body: "شرایط ثبت‌نام را توضیح بده."
+```
+
+پاسخ مدل:
+
+> "برای ثبت‌نام باید فرم اولیه را تکمیل کرده و ایمیل خود را تایید کنید."
+
+**مرحله دوم (همان conversationId):**
+
+```json
+POST /rag/memory/abc123
+Body: "و بعدش چی؟"
+```
+
+پاسخ مدل:
+
+> "پس از تایید ایمیل، می‌توانید وارد داشبورد کاربری شوید و اطلاعات خود را تکمیل نمایید."
+
+در این مثال، چون مکالمه در یک conversationId ذخیره شده، مدل می‌فهمد که "و بعدش چی؟" به سؤال قبلی ارجاع دارد.
+
+```java
+@RestController
+class RagControllerMemory {
+    RagControllerMemory(ChatClient.Builder builder, ChatMemory memory, VectorStore store) {
+        var memoryAdvisor = MessageChatMemoryAdvisor.builder(memory).build();
+        var retriever = VectorStoreDocumentRetriever.builder()
+            .vectorStore(store).similarityThreshold(0.5).build();
+        this.advisor = RetrievalAugmentationAdvisor.builder().documentRetriever(retriever).build();
+        this.chatClient = builder.build();
+    }
+
+    @PostMapping("/rag/memory/{conversationId}")
+    String chat(@RequestBody String q, @PathVariable String conversationId) {
+        return chatClient.prompt()
+            .advisors(memoryAdvisor, advisor)
+            .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+            .user(q).call().content();
+    }
+}
+```
+
+📌 مناسب برای: چت‌های چندمرحله‌ای با سابقه مکالمه
+
+---
+
+## 4. RAG با Query Compression
+
+```java
+var queryTransformer = CompressionQueryTransformer.builder()
+    .chatClientBuilder(builder.build().mutate())
+    .build();
+```
+
+🔍 برای خلاصه‌سازی سوالات طولانی یا شلوغ قبل از بازیابی.
+
+📌 مناسب برای: سوالات ترکیبی یا با جزئیات زیاد.
+
+---
+
+## 5. RAG با Query Rewrite
+
+```java
+var queryTransformer = RewriteQueryTransformer.builder()
+    .chatClientBuilder(builder.build().mutate())
+    .targetSearchSystem("vector store")
+    .build();
+```
+
+🔍 سوال را بازنویسی می‌کند تا برای موتور بازیابی قابل فهم‌تر شود.
+
+📌 مناسب برای: سوالات محاوره‌ای یا مبهم
+
+---
+
+## 6. RAG با Translation
+
+```java
+var queryTransformer = TranslationQueryTransformer.builder()
+    .chatClientBuilder(builder.build().mutate())
+    .targetLanguage("english")
+    .build();
+```
+
+🔍 اگر اسناد انگلیسی هستند و سوال فارسی، ترجمه ضروری است. این transformer قبل از بازیابی، سوال را به انگلیسی ترجمه می‌کند تا بتواند با embeddingهای انگلیسی مقایسه شود.
+
+📌 مناسب برای: پشتیبانی چندزبانه ❗ اگر اسناد فارسی هستند، نباید از این استفاده شود.
+
+### 🧪 مثال کاربردی
+
+فرض کنید vector store شامل این سند انگلیسی است:
+
+> "To register, users must first verify their email address."
+
+و کاربر فارسی‌زبان این درخواست را می‌فرستد:
+
+```json
+POST /rag/translation
+Body: "چطور ثبت‌نام کنم؟"
+```
+
+مراحل زیر رخ می‌دهد:
+
+1. سوال فارسی به انگلیسی ترجمه می‌شود: "How can I register?"
+2. مدل بر اساس نسخه انگلیسی، سند بالا را پیدا می‌کند.
+3. پاسخ مدل با توجه به محتوای بازیابی‌شده ممکن است این باشد:
+
+> "To register, you need to verify your email address first."
+
+✅ در این حالت، بدون translation سند قابل بازیابی نبود، ولی با ترجمه، پاسخ به‌درستی تولید شد.
+
+```java
+var queryTransformer = TranslationQueryTransformer.builder()
+    .chatClientBuilder(builder.build().mutate())
+    .targetLanguage("english")
+    .build();
+```
+
+🔍 اگر اسناد انگلیسی هستند و سوال فارسی، ترجمه ضروری است.
+
+📌 مناسب برای: پشتیبانی چندزبانه ❗ اگر اسناد فارسی هستند، نباید از این استفاده شود.
+
+---
+
+## 7. RAG با Multi-Query Expansion
+
+```java
+var queryExpander = MultiQueryExpander.builder()
+    .chatClientBuilder(builder.build().mutate())
+    .build();
+```
+
+🔁 سوال را به چند شکل مختلف بازنویسی می‌کند تا اسناد متنوع‌تری پیدا شوند.
+
+📌 مناسب برای: بهبود دقت بازیابی و پوشش معنایی بیشتر
+
+---
+
+## 8. RAG ترکیبی و بهینه‌سازی‌شده
+
+```java
+var advisor = RetrievalAugmentationAdvisor.builder()
+    .documentRetriever(retriever)
+    .queryTransformers(translationTransformer)
+    .queryExpander(multiQueryExpander)
+    .taskExecutor(taskExecutor)
+    .build();
+```
+
+🧠 این حالت ترکیبی از ترجمه، گسترش پرسش و اجرای موازی را فراهم می‌کند.
+
+📌 مناسب برای: سیستم‌های واقعی با نیاز به پشتیبانی چندزبانه + بازیابی دقیق + سرعت بالا
+
+---
+
+## نتیجه‌گیری
+
+در Spring AI می‌توان متناسب با نیاز پروژه، از انواع مختلف RAG بهره گرفت:
+
+- از نسخه ساده برای شروع استفاده کنید.
+- سپس با توجه به زبان داده، نوع سؤال و کارایی، قابلیت‌هایی مانند حافظه، ترجمه، فشرده‌سازی و گسترش را اضافه کنید.
+
+اگر اسناد فارسی دارید، از translation استفاده نکنید. اگر چت چندمرحله‌ای دارید، از `ChatMemory` استفاده کنید. اگر دقت retrieval برایتان مهم است، `MultiQueryExpander` یا `RewriteQueryTransformer` بسیار مفید خواهند بود.
+
+✅ با ترکیب این اجزا می‌توانید یک سیستم RAG واقعی، مقیاس‌پذیر و هوشمند بسازید.
