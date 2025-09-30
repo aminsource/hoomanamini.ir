@@ -145,6 +145,7 @@ export default function ListLayoutWithTags({
                             </Link>
                           </h2>
                           <div className="m-5 flex flex-wrap justify-end">
+                            {/* prettier-ignore */}
                             {tags?.map((tag) => <Tag key={tag} text={tag} />)}
                           </div>
                         </div>
