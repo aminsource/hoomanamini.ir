@@ -8,7 +8,7 @@ const POSTS_PER_PAGE = 5
 export const metadata = genPageMetadata({ title: 'وبلاگ' })
 
 export default function BlogPage() {
-  const posts = allCoreContent(sortPosts(allBlogs))
+  const posts = allCoreContent(sortPosts(allBlogs.filter((post) => !post.draft)))
   const pageNumber = 1
   const initialDisplayPosts = posts.slice(
     POSTS_PER_PAGE * (pageNumber - 1),
