@@ -136,7 +136,7 @@ export default function ListLayout({
                         </Link>
                       </h3>
                       <div className="m-5 flex flex-wrap">
-                        {/* prettier-ignore */}
+                        {/* eslint-disable-next-line prettier/prettier */}
                         {tags?.map((tag) => <Tag key={tag} text={tag} />)}
                       </div>
                     </div>
