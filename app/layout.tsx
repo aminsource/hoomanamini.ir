@@ -69,6 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${space_grotesk.variable} scroll-smooth`}
       suppressHydrationWarning
     >
+      <head>
       <link
         rel="apple-touch-icon"
         sizes="76x76"
@@ -96,15 +97,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fff" />
       <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000" />
       <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
-
-      {/* Add your Umami script here */}
-      <script
-        defer
-        src="https://tracker.hoomanamini.ir/script.js"
-        data-website-id="aae78ac2-cc07-4c45-b951-16179229517c"
-      ></script>
+      </head>
 
       <body className="bg-white pl-[calc(100vw-100%)] text-black antialiased dark:bg-gray-950 dark:text-white">
+        {/* Umami Analytics Script */}
+        <Script
+          src="https://tracker.hoomanamini.ir/script.js"
+          data-website-id="aae78ac2-cc07-4c45-b951-16179229517c"
+          strategy="afterInteractive"
+        />
+        
         <ThemeProviders>
           <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
           <SectionContainer>
