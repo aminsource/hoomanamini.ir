@@ -98,10 +98,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
 
       {/* Add your Umami script here */}
-      <Script
+      <script
+        defer
         src="https://tracker.hoomanamini.ir/script.js"
-        data-website-id="69821c49-a8e8-4d82-8fa1-77302799c591"
-      />
+        data-website-id="aae78ac2-cc07-4c45-b951-16179229517c"
+      ></script>
 
       <body className="bg-white pl-[calc(100vw-100%)] text-black antialiased dark:bg-gray-950 dark:text-white">
         <ThemeProviders>
