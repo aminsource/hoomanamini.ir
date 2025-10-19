@@ -1,6 +1,6 @@
 services:
-  # Main Next.js application
-  app:
+  # Static blog site with Nginx
+  blog:
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,70 +9,9 @@ services:
       - '3000:3000'
     environment:
       - NODE_ENV=production
-      - PORT=3000
-    volumes:
-      # Mount static files for development (optional)
-      - ./public/static:/app/public/static:ro
     restart: unless-stopped
     networks:
       - blog-network
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health || exit 1']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Nginx reverse proxy (optional but recommended for production)
-  nginx:
-    image: nginx:alpine
-    container_name: hoomanamini-nginx
-    ports:
-      - '8080:80'
-      - '8443:443'
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro # SSL certificates (if using HTTPS)
-    depends_on:
-      - app
-    restart: unless-stopped
-    networks:
-      - blog-network
-
-  # Redis for caching (optional)
-  redis:
-    image: redis:7-alpine
-    container_name: hoomanamini-redis
-    ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-    networks:
-      - blog-network
-    command: redis-server --appendonly yes
-
-  # Database (if needed for future features)
-  # postgres:
-  #   image: postgres:15-alpine
-  #   container_name: hoomanamini-postgres
-  #   environment:
-  #     POSTGRES_DB: blog
-  #     POSTGRES_USER: blog_user
-  #     POSTGRES_PASSWORD: blog_password
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
-  #   restart: unless-stopped
-  #   networks:
-  #     - blog-network
-
-volumes:
-  redis_data:
-    driver: local
-  # postgres_data:
-  #   driver: local
 
 networks:
   blog-network:

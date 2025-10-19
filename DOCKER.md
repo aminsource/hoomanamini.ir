@@ -12,131 +12,57 @@ This document explains how to run the blog application using Docker and Docker C
 ### Production Environment
 
 ```bash
-# Build and start all services
+# Build and start the blog service
 docker-compose up -d
 
 # View logs
 docker-compose logs -f
 
-# Stop all services
+# Stop the service
 docker-compose down
-```
-
-### Development Environment
-
-```bash
-# Start development environment with hot reload
-docker-compose -f docker-compose.dev.yml up -d
-
-# View development logs
-docker-compose -f docker-compose.dev.yml logs -f app
-
-# Stop development environment
-docker-compose -f docker-compose.dev.yml down
 ```
 
 ## Services
 
 ### Production (`docker-compose.yml`)
 
-- **app**: Next.js application (port 4000)
-- **nginx**: Reverse proxy and load balancer (ports 80, 443)
-- **redis**: Caching service (port 6379)
-
-### Development (`docker-compose.dev.yml`)
-
-- **app**: Next.js development server with hot reload (port 4000)
-- **redis**: Development Redis instance (port 6379)
+- **blog**: Next.js blog application (port 3000)
 
 ## Configuration
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
+The application uses the following environment variables:
 
-```env
-# Application
-NODE_ENV=production
-PORT=3000
-
-# Redis
-REDIS_URL=redis://redis:6379
-
-# Database (if using)
-DATABASE_URL=postgresql://blog_user:blog_password@postgres:5432/blog
-```
-
-### Nginx Configuration
-
-The `nginx.conf` file includes:
-
-- Gzip compression
-- Static file caching
-- Rate limiting for API endpoints
-- Security headers
-- WebSocket support for Next.js hot reload
+- `NODE_ENV=production`
 
 ## Useful Commands
 
 ### Container Management
 
 ```bash
-# Build specific service
-docker-compose build app
+# Build the blog service
+docker-compose build blog
 
 # Rebuild and restart service
-docker-compose up -d --build app
+docker-compose up -d --build blog
 
 # Execute command in running container
-docker-compose exec app bash
+docker-compose exec blog sh
 
 # View container logs
-docker-compose logs -f app
-
-# Scale services
-docker-compose up -d --scale app=3
-```
-
-### Database Operations
-
-```bash
-# Access Redis CLI
-docker-compose exec redis redis-cli
-
-# Backup Redis data
-docker-compose exec redis redis-cli --rdb /data/dump.rdb
+docker-compose logs -f blog
 ```
 
 ### Health Checks
 
 ```bash
-# Check application health
-curl http://localhost:4000/health
+# Check application status
+curl http://localhost:3000
 
-# Check all services status
+# Check service status
 docker-compose ps
 ```
-
-## Development Workflow
-
-1. **Start development environment**:
-
-   ```bash
-   docker-compose -f docker-compose.dev.yml up -d
-   ```
-
-2. **Make code changes** - The application will automatically reload
-
-3. **View logs**:
-
-   ```bash
-   docker-compose -f docker-compose.dev.yml logs -f app
-   ```
-
-4. **Stop development environment**:
-   ```bash
-   docker-compose -f docker-compose.dev.yml down
-   ```
 
 ## Production Deployment
 
@@ -146,7 +72,7 @@ docker-compose ps
    docker-compose build
    ```
 
-2. **Start production services**:
+2. **Start production service**:
 
    ```bash
    docker-compose up -d
@@ -154,14 +80,14 @@ docker-compose ps
 
 3. **Verify deployment**:
    ```bash
-   curl http://localhost:4000
+   curl http://localhost:3000
    ```
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Port conflicts**: Ensure ports 4000, 80, 443, and 6379 are available
+1. **Port conflicts**: Ensure port 3000 is available
 2. **Permission issues**: Run with `sudo` if needed
 3. **Memory issues**: Increase Docker memory allocation
 
@@ -172,10 +98,10 @@ docker-compose ps
 docker-compose ps
 
 # View detailed logs
-docker-compose logs --tail=100 app
+docker-compose logs --tail=100 blog
 
 # Access container shell
-docker-compose exec app sh
+docker-compose exec blog sh
 
 # Check container resources
 docker stats
@@ -194,25 +120,18 @@ docker-compose down --rmi all
 docker system prune -a
 ```
 
-## SSL/HTTPS Setup
+## Build and Run Commands
 
-To enable HTTPS:
+For manual Docker commands:
 
-1. Place SSL certificates in `./ssl/` directory
-2. Update `nginx.conf` to include SSL configuration
-3. Uncomment SSL-related lines in the nginx service
+```bash
+# Build the image
+docker build -t hoomanamini:latest .
 
-## Monitoring
+# Stop and remove existing container
+docker stop hoomanamini || true
+docker rm hoomanamini || true
 
-The setup includes health checks and monitoring capabilities:
-
-- Application health endpoint: `/health`
-- Redis monitoring via `redis-cli`
-- Container health status via `docker-compose ps`
-
-## Performance Optimization
-
-- Static files are cached for 1 year
-- Gzip compression is enabled
-- Rate limiting prevents abuse
-- Redis caching for improved performance
+# Run the container
+docker run -d -p 3000:3000 hoomanamini
+```
