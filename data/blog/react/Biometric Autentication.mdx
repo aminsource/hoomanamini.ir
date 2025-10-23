@@ -1,0 +1,258 @@
+---
+title: '🧠 احراز هویت بیومتریک در وب'
+date: '2025-10-23 16:30'
+lastmod: '2025-10-23'
+tags: []
+draft: false
+summary: ''
+images: []
+---
+
+#
+
+## مقدمه
+
+رمز عبورهای متداول، دیگر پاسخگوی نیاز امنیتی امروزه نیستند.
+به همین دلیل، فناوری **احراز هویت بیومتریک (Biometric Authentication)** با استاندارد **WebAuthn** معرفی شده تا کاربر فقط با اثر انگشت یا چهره وارد شود، بدون رمز.
+
+---
+
+## 🔍 ایده‌ی اصلی
+
+در این روش، مرورگر و سرور با کمک یکدیگر، از **رمزنگاری کلید عمومی (Public Key Cryptography)** برای احراز هویت استفاده می‌کنند.
+
+---
+
+## 🔐 کلید عمومی و خصوصی چطور ساخته می‌شوند؟
+
+وقتی در مرحله‌ی **ثبت (Registration)** هستید و کاربر تأیید بیومتریک انجام می‌دهد،
+مرورگر (از طریق سیستم عامل) دستور می‌دهد دستگاه یک **Credential جدید** بسازد.
+
+در این Credential، جفت کلید زیر تولید می‌شود:
+
+| کلید               | محل نگهداری                                       | توضیح                                                      |
+| ------------------ | ------------------------------------------------- | ---------------------------------------------------------- |
+| 🔒 **Private Key** | روی سخت‌افزار کاربر (مثلاً Secure Enclave یا TPM) | فقط برای امضا استفاده می‌شود، هرگز از دستگاه خارج نمی‌شود. |
+| 🔑 **Public Key**  | به سرور ارسال و ذخیره می‌شود                      | برای بررسی صحت امضا استفاده می‌شود.                        |
+
+این کلیدها از داده‌هایی ساخته می‌شوند که شامل است:
+
+- شناسه کاربر (`user.id`)
+- شناسه دامنه سایت (`rp.id`)
+- الگوریتم رمزنگاری (مثلاً `ES256` یا `RS256`)
+- Challenge تصادفی که از سرور آمده
+
+بنابراین حتی اگر همان کاربر در سایت دیگری Credential بسازد، کلیدها متفاوت‌اند، چون **rp.id (نام دامنه)** فرق دارد.
+این یعنی امنیت در سطح دامنه حفظ می‌شود 🛡️
+
+---
+
+## 🔁 مراحل کامل
+
+### ✅ ۱. ثبت (Registration)
+
+مرورگر:
+
+- از سرور یک Challenge می‌گیرد
+- یک Credential جدید می‌سازد (Public/Private key pair)
+- Public key را همراه با اطلاعات دستگاه برای سرور می‌فرستد
+  سرور:
+- Public key را ذخیره می‌کند
+
+### ✅ ۲. ورود (Authentication)
+
+مرورگر:
+
+- از سرور یک Challenge جدید می‌گیرد
+- با Private key آن را امضا می‌کند
+
+سرور:
+
+- امضا را با Public key ذخیره‌شده مقایسه می‌کند → اگر معتبر بود، ورود موفق است.
+
+---
+
+## 🧰 پیاده‌سازی کامل
+
+### ⚙️ بخش بک‌اند (FastAPI)
+
+```python
+# 📁 main.py
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import base64, os, json
+from typing import Dict
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.exceptions import InvalidSignature
+
+app = FastAPI()
+
+# دیتابیس ساده در حافظه (برای مثال)
+USERS_DB: Dict[str, dict] = {}
+
+# مدل‌ها
+class ChallengeRequest(BaseModel):
+    username: str
+
+class CredentialRegister(BaseModel):
+    username: str
+    public_key: str  # Base64 encoded
+    credential_id: str
+
+class AuthRequest(BaseModel):
+    username: str
+    credential_id: str
+    signature: str   # Base64 encoded
+    challenge: str
+
+# ✅ مرحله ۱: ایجاد Challenge برای ثبت (Registration)
+@app.post("/api/biometric/challenge")
+def create_challenge(req: ChallengeRequest):
+    challenge = os.urandom(32)
+    encoded = base64.b64encode(challenge).decode()
+    USERS_DB[req.username] = {"challenge": encoded}
+    return {"challenge": encoded}
+
+# ✅ مرحله ۲: ذخیره Public Key (بعد از ساخت Credential در مرورگر)
+@app.post("/api/biometric/register")
+def register_credential(data: CredentialRegister):
+    USERS_DB[data.username]["public_key"] = data.public_key
+    USERS_DB[data.username]["credential_id"] = data.credential_id
+    return {"success": True, "message": "Public key saved."}
+
+# ✅ مرحله ۳: تأیید ورود (Authentication)
+@app.post("/api/biometric/verify")
+def verify_signature(data: AuthRequest):
+    user = USERS_DB.get(data.username)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # بارگذاری کلید عمومی از Base64
+    public_key_bytes = base64.b64decode(user["public_key"])
+    public_key = serialization.load_pem_public_key(public_key_bytes)
+
+    # تبدیل challenge و امضا از Base64
+    challenge = base64.b64decode(data.challenge)
+    signature = base64.b64decode(data.signature)
+
+    # ✅ بررسی امضا
+    try:
+        public_key.verify(signature, challenge, ec.ECDSA(hashes.SHA256()))
+        return {"success": True, "message": "Authentication successful"}
+    except InvalidSignature:
+        raise HTTPException(status_code=401, detail="Invalid signature")
+```
+
+---
+
+### ⚛️ بخش فرانت‌اند (React)
+
+```tsx
+// 📁 src/hooks/useWebAuthn.ts
+'use client'
+import { useState } from 'react'
+
+export const useWebAuthn = () => {
+  const [isLoading, setIsLoading] = useState(false)
+
+  // ✅ ثبت (Registration)
+  const register = async (username: string) => {
+    setIsLoading(true)
+    try {
+      // مرحله ۱: دریافت Challenge از سرور
+      const challengeResp = await fetch('/api/biometric/challenge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      })
+      const { challenge } = await challengeResp.json()
+
+      // مرحله ۲: ایجاد Credential جدید
+      const publicKey: PublicKeyCredentialCreationOptions = {
+        challenge: Uint8Array.from(atob(challenge), (c) => c.charCodeAt(0)),
+        rp: { name: 'MyApp', id: window.location.hostname },
+        user: {
+          id: new TextEncoder().encode(username),
+          name: username,
+          displayName: username,
+        },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }], // ES256
+      }
+
+      const credential = await navigator.credentials.create({ publicKey })
+
+      // مرحله ۳: ارسال Public Key به سرور
+      const attestation = credential as PublicKeyCredential
+      const publicKeyData = btoa(String.fromCharCode(...new Uint8Array(attestation.rawId)))
+
+      await fetch('/api/biometric/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          credential_id: attestation.id,
+          public_key: publicKeyData,
+        }),
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // ✅ ورود (Authentication)
+  const authenticate = async (username: string) => {
+    setIsLoading(true)
+    try {
+      // مرحله ۱: گرفتن Challenge جدید از سرور
+      const res = await fetch('/api/biometric/challenge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username }),
+      })
+      const { challenge } = await res.json()
+
+      // مرحله ۲: درخواست امضا از دستگاه کاربر
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge: Uint8Array.from(atob(challenge), (c) => c.charCodeAt(0)),
+          userVerification: 'required',
+        },
+      })
+
+      // مرحله ۳: ارسال امضا به سرور
+      const signature = btoa(
+        String.fromCharCode(
+          ...new Uint8Array((assertion as PublicKeyCredential).response.signature)
+        )
+      )
+
+      await fetch('/api/biometric/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          credential_id: (assertion as PublicKeyCredential).id,
+          signature,
+          challenge,
+        }),
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return { register, authenticate, isLoading }
+}
+```
+
+---
+
+## 🧠 جمع‌بندی فنی
+
+| بخش                   | اتفاق                                                                      |
+| --------------------- | -------------------------------------------------------------------------- |
+| مرحله‌ی ثبت           | کلیدها با استفاده از Challenge، user.id و rp.id ساخته می‌شوند.             |
+| مرحله‌ی ورود          | امضای دیجیتال با Private Key ساخته و با Public Key سمت سرور بررسی می‌شود.  |
+| داده‌های رمزنگاری‌شده | Base64 ارسال می‌شوند تا قابل انتقال در JSON باشند.                         |
+| امنیت                 | کلید خصوصی هیچ‌گاه از دستگاه خارج نمی‌شود، حتی برای مرورگر قابل دیدن نیست. |
